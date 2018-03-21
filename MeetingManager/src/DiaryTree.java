@@ -35,6 +35,7 @@ public class DiaryTree {
 	 * @return the found DiaryList or null if it doesn't exist
 	 */
 	public DiaryList search(DiaryList otherList) {
+		//inspired by https://stackoverflow.com/a/25923832
 		DiaryList floor = tree.floor(otherList);
 		if (floor == null) {
 			//name not found

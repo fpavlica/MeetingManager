@@ -1,5 +1,5 @@
 
-public class Diary implements Comparable{
+public class Diary implements Comparable<Diary>{
 	private String firstname, lastname;
 	private long id;
 
@@ -9,8 +9,8 @@ public class Diary implements Comparable{
 	}
 	
 	@Override
-	public int compareTo(Object o) {
-		String comparingName = ((Diary) o).getSortableName();
+	public int compareTo(Diary otherDiary) {
+		String comparingName = otherDiary.getSortableName();
 		return this.getSortableName().compareTo(comparingName);
 	}
 	
