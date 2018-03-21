@@ -1,6 +1,6 @@
 import java.util.LinkedList;
 
-public class DiaryList implements Comparable{
+public class DiaryList implements Comparable<DiaryList>{
 
 	private LinkedList<Diary> diaries;
 	
@@ -30,14 +30,14 @@ public class DiaryList implements Comparable{
 	}
 	
 	@Override
-	public int compareTo(Object arg0) {
+	public int compareTo(DiaryList otherList) {
 		/*
 		String thisName = diaries.getFirst().getSortableName();
 		LinkedList<Diary> comparingTo = ((DiaryList) arg0).getDiaries();
 		String comparingName = comparingTo.getFirst().getSortableName();
 		return thisName.compareToIgnoreCase(comparingName);
 		*/
-		Diary comparingTo = ((DiaryList) arg0).getDiaries().getFirst();
+		Diary comparingTo = otherList.getDiaries().getFirst();
 		return this.getDiaries().getFirst().compareTo(comparingTo);
 	}
 	/**

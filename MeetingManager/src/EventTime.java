@@ -1,5 +1,10 @@
 import java.util.Date;
 
+/**
+ * Used for searching for an available timeslot
+ * @author fpavlica
+ *
+ */
 public class EventTime {
 	private Date time;
 	private boolean isStart;
