@@ -5,7 +5,7 @@ import java.util.Date;
  * @author fpavlica
  *
  */
-public class EventTime {
+public class EventTime implements Comparable<EventTime> {
 	private Date time;
 	private boolean isStart;
 	
@@ -37,5 +37,11 @@ public class EventTime {
 	 */
 	public void setStart(boolean isStart) {
 		this.isStart = isStart;
+	}
+
+	@Override
+	public int compareTo(EventTime o) {
+		// TODO Auto-generated method stub
+		return time.compareTo(o.getTime());
 	}
 }
