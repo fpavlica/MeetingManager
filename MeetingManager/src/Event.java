@@ -1,6 +1,6 @@
 import java.util.Date;
 
-public class Event {
+public class Event implements Comparable<Event>{
 	private String name;
 	private Date startTime, endTime;
 	/*
@@ -25,6 +25,7 @@ public class Event {
 		this.name = name;
 	}
 	
+	@Override
 	public int compareTo(Event otherEvent) {
 		return startTime.compareTo(otherEvent.getStartTime());
 	}

@@ -1,11 +1,36 @@
+import java.util.Date;
+import java.util.TreeSet;
 
 public class Diary implements Comparable<Diary>{
 	private String firstname, lastname;
 	private long id;
+	private TreeSet<Event> events;
 
 	public Diary(String firstname, String lastname) {
 		this.firstname = firstname;
 		this.lastname = lastname;
+		this.events = new TreeSet<Event>();
+	}
+	
+	public boolean addEvent(Event event) {
+		return events.add(event);
+	}
+	
+	public Event findEventByStartTime(Date starttime) {
+		Event startTimeEvent = new Event(starttime, new Date(), "");
+		Event floor = events.floor(startTimeEvent);
+		if (floor == null) {
+			//name not found
+			return null; //TODO hacky, just skips a part of the code
+		}
+		int temp = floor.compareTo(startTimeEvent);
+		if (temp == 0) {
+			//same name, found
+			return floor;
+		} else {
+			//name not found
+			return null;
+		}
 	}
 	
 	@Override
