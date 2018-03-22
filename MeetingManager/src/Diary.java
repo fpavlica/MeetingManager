@@ -1,4 +1,6 @@
 import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.TreeSet;
 
 public class Diary implements Comparable<Diary>{
@@ -37,6 +39,204 @@ public class Diary implements Comparable<Diary>{
 			//name not found
 			return null;
 		}
+	}
+	
+	/**
+	** edits existing event info according to what the user wants to change
+	** TODO make the input validation for dates a single method (possibly used for creating events?)
+	**/
+		public boolean editEvent(Event editingEvent) {
+		String command = "";
+		Calendar today = Calendar.getInstance();
+		boolean check = false;
+		if (editingEvent != null) {
+			System.out.println("\nDo you wish to change the name? Y/N");
+			while (!command.equalsIgnoreCase("N")) {
+				command = UserInput.nextString();
+				if (command.compareToIgnoreCase("Y") == 0) {
+					String newName = UserInput.nextString();
+					editingEvent.setName(newName);
+				} else {
+					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
+				}
+			}
+			command = " ";
+
+			System.out.println("\nDo you wish to change the start time? Y/N");
+			while (!command.equalsIgnoreCase("N")) {
+				command = UserInput.nextString();
+				if (command.compareToIgnoreCase("Y") == 0) {
+					int yearS = 0;
+					int monthS = 0;
+					int dayS = 0;
+					int hourS = 0;
+					int minuteS = 0;
+
+					while (check == false) {
+						System.out.println("\nInput year of meeting.");
+						yearS = UserInput.nextInt();
+						if (yearS >= today.get(Calendar.YEAR)) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid year.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput month of meeting.");
+						monthS = UserInput.nextInt();
+						if (monthS > 0 && monthS <= 12) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid month.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput day of meeting.");
+						dayS = UserInput.nextInt();
+						if (monthS == 1 || monthS == 3 || monthS == 5 || monthS == 7 || monthS == 9 || monthS == 11) {
+							if (dayS > 0 && dayS <= 31) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						} else if (monthS == 2) {
+							if (dayS > 0 && dayS <= 29) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						} else {
+							if (dayS > 0 && dayS <= 30) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput hour start of meeting. (24 hour format)");
+						hourS = UserInput.nextInt();
+						if (hourS > 0 && hourS <= 23) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid hour.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+					System.out.println("\nInput minute start of meeting.");
+					minuteS = UserInput.nextInt();
+					if (minuteS > 0 && minuteS <= 59) {
+						check = true;
+					} else {
+						System.out.println("\nInvalid hour.");
+					}
+				} check = false;
+				
+					Calendar newStartFormat = new GregorianCalendar(yearS, monthS, dayS, hourS, minuteS);
+					Date newStart = newStartFormat.getTime();
+					editingEvent.setStartTime(newStart);
+				} else {
+					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
+				}
+			}//
+			command = " ";
+			
+			System.out.println("\nDo you wish to change the end time? Y/N");
+			while (!command.equalsIgnoreCase("N")) {
+				command = UserInput.nextString();
+				if (command.compareToIgnoreCase("Y") == 0) {
+					int yearE = 0;
+					int monthE = 0;
+					int dayE = 0;
+					int hourE = 0;
+					int minuteE = 0;
+
+					while (check == false) {
+						System.out.println("\nInput year of meeting.");
+						yearE = UserInput.nextInt();
+						if (yearE >= today.get(Calendar.YEAR)) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid year.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput month of meeting.");
+						monthE = UserInput.nextInt();
+						if (monthE > 0 && monthE <= 12) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid month.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput day of meeting.");
+						dayE = UserInput.nextInt();
+						if (monthE == 1 || monthE == 3 || monthE == 5 || monthE == 7 || monthE == 9 || monthE == 11) {
+							if (dayE > 0 && dayE <= 31) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						} else if (monthE == 2) {
+							if (dayE > 0 && dayE <= 29) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						} else {
+							if (dayE > 0 && dayE <= 30) {
+								check = true;
+							} else {
+								System.out.println("\nInvalid day.");
+							}
+						}
+					}
+					check = false;
+
+					while (check == false) {
+						System.out.println("\nInput hour start of meeting. (24 hour format)");
+						hourE = UserInput.nextInt();
+						if (hourE > 0 && hourE <= 23) {
+							check = true;
+						} else {
+							System.out.println("\nInvalid hour.");
+						}
+					}
+					check = false;
+
+					while (check == false) {
+					System.out.println("\nInput minute start of meeting.");
+					minuteE = UserInput.nextInt();
+					if (minuteE > 0 && minuteE <= 59) {
+						check = true;
+					} else {
+						System.out.println("\nInvalid hour.");
+					}
+				} check = false;
+				
+					Calendar newEndFormat = new GregorianCalendar(yearE, monthE, dayE, hourE, minuteE);
+					Date newEnd = newEndFormat.getTime();
+					editingEvent.setEndTime(newEnd);
+				} else {
+					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
