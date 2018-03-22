@@ -16,6 +16,12 @@ public class Diary implements Comparable<Diary>{
 		return events.add(event);
 	}
 	
+	public void printAllEvents() {
+		for (Event e: events) {
+			System.out.println(e);
+		}
+	}
+	
 	public Event findEventByStartTime(Date starttime) {
 		Event startTimeEvent = new Event(starttime, new Date(), "");
 		Event floor = events.floor(startTimeEvent);
@@ -49,6 +55,13 @@ public class Diary implements Comparable<Diary>{
 		return lastname + " " + firstname;
 	}
 	
+	/**
+	 * @return the events
+	 */
+	public TreeSet<Event> getEvents() {
+		return events;
+	}
+
 	/**
 	 * @return the firstname
 	 */

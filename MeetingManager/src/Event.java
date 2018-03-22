@@ -25,9 +25,20 @@ public class Event implements Comparable<Event>{
 		this.name = name;
 	}
 	
+	public Event(Date startTime, String name) {
+		this.startTime = startTime;
+		this.name = name;
+	}
+	
 	@Override
 	public int compareTo(Event otherEvent) {
 		return startTime.compareTo(otherEvent.getStartTime());
+	}
+	
+	@Override
+	public String toString() {
+		//TODO maybe not like this
+		return "Event " + name +", from " + startTime + " to " + endTime;
 	}
 
 	/**
