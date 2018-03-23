@@ -75,12 +75,13 @@ public class Tester {
 			d.printAllEvents();
 		}
 		sd = tester.findMeetingSlot(dArr);
+		System.out.println("\n"+sd);
 		sd.printAllEvents();
 	}
 	public boolean addEventToAll(Diary[] diaries, Event event) {
 		boolean added = true;
 		for (Diary d: diaries) {
-			if (!d.addEvent(event)) {
+			if (!d.addEvent(new Event(event))) {
 				//if any add was unsuccessful
 				added = false;
 			}

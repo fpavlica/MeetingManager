@@ -24,6 +24,13 @@ public class Event implements Comparable<Event>{
 		this.name = name;
 	}
 	
+	public Event(Event eventToCopy) {
+		this.name = eventToCopy.getName();
+		this.startTime = eventToCopy.getStartTime();
+		this.endTime = eventToCopy.getEndTime();
+		this.index = eventToCopy.getIndex();
+	}
+	
 	@Override
 	public int compareTo(Event otherEvent) {
 		return startTime.compareTo(otherEvent.getStartTime());
