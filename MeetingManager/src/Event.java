@@ -3,27 +3,21 @@ import java.util.Date;
 public class Event implements Comparable<Event>{
 	private String name;
 	private Date startTime, endTime;
-	/*
-	EventTime startTime;
-	EventTime endTime;
-	Date dateOfEvent;
-	boolean isEventMeeting;
+	private int index; //for selecting in the console
 
-	
-	public Event(EventTime startTime, EventTime endTime, Date dateOfEvent, boolean isEventMeeting) {
+	public Event(Date startTime, Date endTime, String name, int index) {
 		this.startTime = startTime;
 		this.endTime = endTime;
-		this.dateOfEvent = dateOfEvent;
-		this.isEventMeeting = isEventMeeting;
-	
+		this.name = name;
+		this.setIndex(index);
 	}
-	*/
 	
 	public Event(Date startTime, Date endTime, String name) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.name = name;
 	}
+	
 	
 	public Event(Date startTime, String name) {
 		this.startTime = startTime;
@@ -38,7 +32,7 @@ public class Event implements Comparable<Event>{
 	@Override
 	public String toString() {
 		//TODO maybe not like this
-		return "Event " + name +", from " + startTime + " to " + endTime;
+		return name +", from " + startTime + " to " + endTime + "\t\t"+ index;
 	}
 
 	/**
@@ -81,6 +75,18 @@ public class Event implements Comparable<Event>{
 	 */
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+	/**
+	 * @return the index
+	 */
+	public int getIndex() {
+		return index;
+	}
+	/**
+	 * @param index the index to set
+	 */
+	public void setIndex(int index) {
+		this.index = index;
 	}
 	
 }
