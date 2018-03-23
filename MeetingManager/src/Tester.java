@@ -39,11 +39,9 @@ public class Tester {
 		dArr[0].addEvent(new Event(new Date(thisYear, july, 21, 11, 30, 0), new Date(thisYear, july, 21, 13, 45, 0), "Birthday2"));
 		dArr[2].addEvent(new Event(new Date(thisYear, july, 21, 11, 15, 0), new Date(thisYear, july, 21, 13, 30, 0), "Birthday3"));
 		dArr[2].addEvent(new Event(new Date(thisYear, july, 21, 14, 15, 0), new Date(thisYear, july, 21, 15, 0, 0), "Birthday4"));
+
+		dtree.print();
 		
-		for (Diary d: dArr) {
-			System.out.println(d);
-			d.printAllEvents();
-		}
 		Date now1 = new Date();
 		Diary sd = manager.findMeetingSlotPrintTime(dArr);
 		sd.printAllEvents();
@@ -69,10 +67,7 @@ public class Tester {
 		manager.addEventToAll(tempArr, addToAll);
 		
 
-		for (Diary d: dArr) {
-			System.out.println(d);
-			d.printAllEvents();
-		}
+		dtree.print();
 		sd = manager.findMeetingSlot(dArr);
 		System.out.println("\n"+sd);
 		sd.printAllEvents();

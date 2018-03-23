@@ -27,7 +27,9 @@ public class DiaryList implements Comparable<DiaryList>, Serializable{
 	}
 	
 	public void print() {
-		System.out.println(diaries);
+		for (Diary diary : diaries) {
+			System.out.println(diary);
+		}
 	}
 	
 	@Override
