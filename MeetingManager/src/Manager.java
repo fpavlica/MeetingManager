@@ -10,8 +10,8 @@ import java.util.TreeSet;
 
 public class Manager {
 	
-	Stack<Diary> diaryUndoStack;
-	DiaryTree dTree;
+	private transient Stack<Diary> diaryUndoStack;
+	private DiaryTree dTree;
 	
 	/**
 	 * The main class
