@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class DiaryList implements Comparable<DiaryList>{
+public class DiaryList implements Comparable<DiaryList>, Serializable{
 
 	private LinkedList<Diary> diaries;
 	
@@ -26,7 +27,9 @@ public class DiaryList implements Comparable<DiaryList>{
 	}
 	
 	public void print() {
-		System.out.println(diaries);
+		for (Diary diary : diaries) {
+			System.out.println(diary);
+		}
 	}
 	
 	@Override

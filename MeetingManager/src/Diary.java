@@ -1,25 +1,37 @@
 import java.util.Date;
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Stack;
 import java.util.TreeSet;
 
-public class Diary implements Comparable<Diary>{
+public class Diary implements Comparable<Diary>, Serializable{
 	private String firstname, lastname;
 	private long id;
 	private TreeSet<Event> events;
 	private int currentEventIndex;
+	private transient Stack<EventState> undoStack, redoStack;
 
 	public Diary(String firstname, String lastname) {
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.events = new TreeSet<Event>();
 		this.currentEventIndex = 1; //starting at 1 because it's going to be used for user interaction mostly
+		this.undoStack = new Stack<EventState>();
+		this.redoStack = new Stack<EventState>();
 	}
 	
 	public boolean addEvent(Event event) {
 		event.setIndex(currentEventIndex);
 		currentEventIndex++;
+		undoStack.push(new EventState(event, EventState.Action.ADD));
 		return events.add(event);
+	}
+	
+	public boolean removeEvent(Event event) {
+		currentEventIndex--;
+		undoStack.push(new EventState(event, EventState.Action.REMOVE));
+		return events.remove(event);
 	}
 	
 	public void printAllEvents() {
@@ -28,27 +40,50 @@ public class Diary implements Comparable<Diary>{
 		}
 	}
 	
+	public void undo() {
+		EventState lastState = undoStack.pop();
+		redoStack.push(lastState);
+		undoEvent(lastState);
+	}
+	
+	public void redo() {
+		EventState lastState = redoStack.pop();
+		undoStack.push(lastState);
+		undoEvent(lastState);
+	}
+	private void undoEvent(EventState event) {
+		
+		if (event.getAction() == EventState.Action.ADD) {
+			//last event was added, should now remove
+			removeEvent(event.getEventRef());
+		} else if (event.getAction() == EventState.Action.REMOVE) {
+			//last event was removed, should be added back
+			addEvent(event.getEventData());
+		} else {//i.e. if (event.getAction() == EventState.Action.EDIT) {
+			//last event was just edited, simply undo edits
+			event.undoEdits(); //TODO feels too tightly coupled maybe
+		}
+	}
+	
+	
 	public Event findEventByStartTime(Date starttime) {
-		Event startTimeEvent = new Event(starttime, "");
-		Event floor = events.floor(startTimeEvent);
-		if (floor == null) {
-			//name not found
-			return null; //TODO hacky, just skips a part of the code
-		}
-		int temp = floor.compareTo(startTimeEvent);
-		if (temp == 0) {
-			//same name, found
-			return floor;
-		} else {
-			//name not found
-			return null;
-		}
+		Event timeEvent = new Event(starttime, "");	
+		Event floor = events.floor(timeEvent);
+		if (floor != null) {
+			//starttime has left children, floor is the rightmost element in otherList's left subtree
+			if (floor.compareTo(timeEvent) == 0) {
+				//same starttime, found
+				return floor;
+			}
+		} 
+		//not found
+		return null;	
 	}
 	
 	public boolean editEventByIndex(int index) {
 		Event theEvent = findEventByIndex(index);
 		if (theEvent != null) { //if such event exists
-			 return editEvent(theEvent);
+			 return editEventConsole(theEvent);
 		} else {
 			//event with this ID does not exist
 			System.out.println("An event with this ID does not exist.");
@@ -66,19 +101,26 @@ public class Diary implements Comparable<Diary>{
 		return null; //code only gets here if nothing was found.
 	}
 
+	public boolean editEvent(Event eventToEdit, Event newEventData) {
+		undoStack.push(new EventState(eventToEdit, EventState.Action.EDIT));
+		eventToEdit.copyDataFrom(newEventData);
+		return true; //TODO bad
+	}
+	
 	/**
 	 * edits chosen event data by user choice
 	 * 
 	 * @param editingEvent
 	 * @return true if editing was conducted or false if none happened
 	 */
-	public boolean editEvent(Event editingEvent) {
-
+	public boolean editEventConsole(Event editingEvent) {
+		
 		if (editingEvent != null) {
 
+			undoStack.push(new EventState(editingEvent, EventState.Action.EDIT));
 			// Asks user for event name change
 			System.out.println("\nDo you wish to change the name? Y/N");
-			if (getAnswerYN()) {
+			if (UserInput.nextAnswerYN()) {
 				System.out.println("Please enter a new name for this event:");
 				String newName = UserInput.nextString();
 				editingEvent.setName(newName);
@@ -86,7 +128,7 @@ public class Diary implements Comparable<Diary>{
 			
 			// Asks user to change start time
 			System.out.println("\nDo you wish to change the start time? Y/N");
-			if (getAnswerYN()) {
+			if (UserInput.nextAnswerYN()) {
 				Calendar newStartFormat = changeTime();
 				Date newStart = newStartFormat.getTime();
 				editingEvent.setStartTime(newStart);
@@ -94,34 +136,18 @@ public class Diary implements Comparable<Diary>{
 			
 			// Asks user to change ending time
 			System.out.println("\nDo you wish to change the end time? Y/N");
-			if (getAnswerYN()) {
+			if (UserInput.nextAnswerYN()) {
 			
 				Calendar newEndFormat = changeTime();
 				Date newEnd = newEndFormat.getTime();
 				editingEvent.setEndTime(newEnd);
 			}
+			
+			
 			return true;
 		} else {
 			return false;
 		}
-	}
-	private boolean getAnswerYN() {
-		boolean pass = false;
-		boolean decision = false;
-		do {
-			String answer = UserInput.nextString();
-			if (answer.equalsIgnoreCase("Y")) {
-				decision = true;
-				pass = true;
-			} else if (answer.equalsIgnoreCase("N")) {
-				decision = false;
-				pass = true;
-			} else {
-				System.out.println("Input not recognized. Please respond with 'Y' or 'N'. Try again:");
-				//invalid input, keep pass as false
-			}
-		} while (!pass);
-		return decision;
 	}
 
 	/**
@@ -173,7 +199,11 @@ public class Diary implements Comparable<Diary>{
 	@Override
 	public String toString() {
 		//TODO temp
-		return firstname + " " + lastname;
+		String s =  firstname + " " + lastname;
+		for (Event e: events) {
+			s+="\n" + e;
+		}
+		return s;
 	}
 	
 	public String getSortableName() {
