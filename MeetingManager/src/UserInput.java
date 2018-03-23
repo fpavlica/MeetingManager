@@ -63,6 +63,45 @@ public class UserInput {
 		return s.nextLine();
 	}
 	
+	public static int nextMonth() {
+		int value = nextInt();
+		while (value<1 && value>12) {
+			System.out.println("This number does not correspond to a month. Please try again:");
+			value = nextInt();
+		}
+		return --value; //because months in java start at 0 but at 1 in natural language
+	}
+	
+	public static int nextHour() {
+
+		int value = nextInt();
+		while (value<0 && value>23) {
+			System.out.println("This number does not correspond to an hour of the day. Please try again:");
+			value = nextInt();
+		}
+		return value;
+	}
+	
+	public static int nextMinute() {
+
+		int value = nextInt();
+		while (value<0 && value>59) {
+			System.out.println("This number does not correspond to a minute. Please try again:");
+			value = nextInt();
+		}
+		return value;
+	}
+	
+	public static int nextDayOfMonth() {
+
+		int value = nextInt();
+		while (value<1 && value>31) {
+			System.out.println("This number does not correspond to a day of a month. Please try again:");
+			value = nextInt();
+		}
+		return value;
+	}
+	
 	/**
 	 * Tries to read a number from the console. If it fails because an invalid value
 	 * was entered, it prompts the user to try again until a valid <code>float</code> is entered.
