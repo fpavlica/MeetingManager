@@ -1,7 +1,7 @@
 import java.util.Date;
 
 /**
- * Used for searching for an available timeslot
+ * Used just for searching for an available timeslot
  * @author fpavlica
  *
  */

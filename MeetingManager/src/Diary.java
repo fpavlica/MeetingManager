@@ -7,14 +7,18 @@ public class Diary implements Comparable<Diary>{
 	private String firstname, lastname;
 	private long id;
 	private TreeSet<Event> events;
+	private int currentEventIndex;
 
 	public Diary(String firstname, String lastname) {
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.events = new TreeSet<Event>();
+		this.currentEventIndex = 1; //starting at 1 because it's going to be used for user interaction mostly
 	}
 	
 	public boolean addEvent(Event event) {
+		event.setIndex(currentEventIndex);
+		currentEventIndex++;
 		return events.add(event);
 	}
 	
@@ -25,7 +29,7 @@ public class Diary implements Comparable<Diary>{
 	}
 	
 	public Event findEventByStartTime(Date starttime) {
-		Event startTimeEvent = new Event(starttime, new Date(), "");
+		Event startTimeEvent = new Event(starttime, "");
 		Event floor = events.floor(startTimeEvent);
 		if (floor == null) {
 			//name not found
@@ -41,6 +45,27 @@ public class Diary implements Comparable<Diary>{
 		}
 	}
 	
+	public boolean editEventByIndex(int index) {
+		Event theEvent = findEventByIndex(index);
+		if (theEvent != null) { //if such event exists
+			 return editEvent(theEvent);
+		} else {
+			//event with this ID does not exist
+			System.out.println("An event with this ID does not exist.");
+			return false;
+		}
+	}
+	
+	public Event findEventByIndex(int index) {
+		//inefficient probably, has to traverse the whole tree to find it
+		for (Event e: events) {
+			if (e.getIndex()==index) {
+				return e;
+			}
+		}
+		return null; //code only gets here if nothing was found.
+	}
+
 	/**
 	 * edits chosen event data by user choice
 	 * 
@@ -48,53 +73,55 @@ public class Diary implements Comparable<Diary>{
 	 * @return true if editing was conducted or false if none happened
 	 */
 	public boolean editEvent(Event editingEvent) {
-		String command = ""; // Used for user to answer with yes or no to editing specific parts of event
 
 		if (editingEvent != null) {
 
 			// Asks user for event name change
 			System.out.println("\nDo you wish to change the name? Y/N");
-			while (!command.equalsIgnoreCase("N")) {
-				command = UserInput.nextString();
-				if (command.compareToIgnoreCase("Y") == 0) {
-					String newName = UserInput.nextString();
-					editingEvent.setName(newName);
-				} else {
-					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
-				}
+			if (getAnswerYN()) {
+				System.out.println("Please enter a new name for this event:");
+				String newName = UserInput.nextString();
+				editingEvent.setName(newName);
 			}
-			command = " ";
-
+			
 			// Asks user to change start time
 			System.out.println("\nDo you wish to change the start time? Y/N");
-			while (!command.equalsIgnoreCase("N")) {
-				command = UserInput.nextString();
-				if (command.compareToIgnoreCase("Y") == 0) {
-					Calendar newStartFormat = changeTime();
-					Date newStart = newStartFormat.getTime();
-					editingEvent.setStartTime(newStart);
-				} else {
-					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
-				}
-			} //
-			command = " ";
-
+			if (getAnswerYN()) {
+				Calendar newStartFormat = changeTime();
+				Date newStart = newStartFormat.getTime();
+				editingEvent.setStartTime(newStart);
+			} 
+			
 			// Asks user to change ending time
 			System.out.println("\nDo you wish to change the end time? Y/N");
-			while (!command.equalsIgnoreCase("N")) {
-				command = UserInput.nextString();
-				if (command.compareToIgnoreCase("Y") == 0) {
-
-					Calendar newEndFormat = changeTime();
-					Date newEnd = newEndFormat.getTime();
-					editingEvent.setEndTime(newEnd);
-				} else {
-					System.out.println("\nInput not recognized. Respond with 'Y' or 'N'");
-				}
+			if (getAnswerYN()) {
+			
+				Calendar newEndFormat = changeTime();
+				Date newEnd = newEndFormat.getTime();
+				editingEvent.setEndTime(newEnd);
 			}
 			return true;
+		} else {
+			return false;
 		}
-		return false;
+	}
+	private boolean getAnswerYN() {
+		boolean pass = false;
+		boolean decision = false;
+		do {
+			String answer = UserInput.nextString();
+			if (answer.equalsIgnoreCase("Y")) {
+				decision = true;
+				pass = true;
+			} else if (answer.equalsIgnoreCase("N")) {
+				decision = false;
+				pass = true;
+			} else {
+				System.out.println("Input not recognized. Please respond with 'Y' or 'N'. Try again:");
+				//invalid input, keep pass as false
+			}
+		} while (!pass);
+		return decision;
 	}
 
 	/**
@@ -112,25 +139,25 @@ public class Diary implements Comparable<Diary>{
 		int minute = 0;
 
 		//inputs new year
-			System.out.println("\nInput year of meeting.");
+			System.out.println("\nEnter year of event:");
 			year = UserInput.nextInt();
 		
 
 		//inputs new month
-			System.out.println("\nInput month of meeting.");
+			System.out.println("\nEnter month of event:");
 			month = UserInput.nextMonth();
 
 		//inputs new day
-			System.out.println("\nInput day of meeting.");
+			System.out.println("\nEnter day of event:");
 			day = UserInput.nextDayOfMonth();
 
 		//inputs new hour
-			System.out.println("\nInput hour start of meeting. (24 hour format)");
+			System.out.println("\nEnter hour of event (24 hour format):");
 			hour = UserInput.nextHour();
 
 		//inputs new minute
 		
-			System.out.println("\nInput minute start of meeting.");
+			System.out.println("\nEnter minute of event:");
 			minute = UserInput.nextMinute();
 			
 		Calendar newFormat = new GregorianCalendar(year, month, day, hour, minute);
@@ -153,6 +180,9 @@ public class Diary implements Comparable<Diary>{
 		return lastname + " " + firstname;
 	}
 	
+	public String getName() {
+		return firstname + " " + lastname;
+	}
 	/**
 	 * @return the events
 	 */
