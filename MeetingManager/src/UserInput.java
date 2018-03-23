@@ -62,10 +62,10 @@ public class UserInput {
 		Scanner s = new Scanner(System.in);
 		return s.nextLine();
 	}
-	
+
 	public static int nextMonth() {
 		int value = nextInt();
-		while (value<1 && value>12) {
+		while (value<1 || value>12) {
 			System.out.println("This number does not correspond to a month. Please try again:");
 			value = nextInt();
 		}
@@ -75,7 +75,7 @@ public class UserInput {
 	public static int nextHour() {
 
 		int value = nextInt();
-		while (value<0 && value>23) {
+		while (value<0 || value>23) {
 			System.out.println("This number does not correspond to an hour of the day. Please try again:");
 			value = nextInt();
 		}
@@ -85,7 +85,7 @@ public class UserInput {
 	public static int nextMinute() {
 
 		int value = nextInt();
-		while (value<0 && value>59) {
+		while (value<0 || value>59) {
 			System.out.println("This number does not correspond to a minute. Please try again:");
 			value = nextInt();
 		}
@@ -95,7 +95,7 @@ public class UserInput {
 	public static int nextDayOfMonth() {
 
 		int value = nextInt();
-		while (value<1 && value>31) {
+		while (value<1 || value>31) {
 			System.out.println("This number does not correspond to a day of a month. Please try again:");
 			value = nextInt();
 		}
