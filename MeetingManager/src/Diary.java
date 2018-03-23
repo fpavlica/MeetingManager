@@ -105,8 +105,6 @@ public class Diary implements Comparable<Diary>{
 	 */
 	private Calendar changeTime() {
 
-		Calendar today = Calendar.getInstance();
-		boolean check = false;
 		int year = 0;
 		int month = 0;
 		int day = 0;
@@ -114,79 +112,27 @@ public class Diary implements Comparable<Diary>{
 		int minute = 0;
 
 		//inputs new year
-		while (check == false) {
 			System.out.println("\nInput year of meeting.");
 			year = UserInput.nextInt();
-			if (year >= today.get(Calendar.YEAR)) {
-				check = true;
-			} else {
-				System.out.println("\nInvalid year.");
-			}
-		}
-		check = false;
+		
 
 		//inputs new month
-		while (check == false) {
 			System.out.println("\nInput month of meeting.");
-			month = UserInput.nextInt();
-			if (month > 0 && month <= 12) {
-				check = true;
-			} else {
-				System.out.println("\nInvalid month.");
-			}
-		}
-		check = false;
+			month = UserInput.nextMonth();
 
 		//inputs new day
-		while (check == false) {
 			System.out.println("\nInput day of meeting.");
-			day = UserInput.nextInt();
-			if (month == 1 || month == 3 || month == 5 || month == 7 || month == 9 || month == 11) {
-				if (day > 0 && day <= 31) {
-					check = true;
-				} else {
-					System.out.println("\nInvalid day.");
-				}
-			} else if (month == 2) {
-				if (day > 0 && day <= 29) {
-					check = true;
-				} else {
-					System.out.println("\nInvalid day.");
-				}
-			} else {
-				if (day > 0 && day <= 30) {
-					check = true;
-				} else {
-					System.out.println("\nInvalid day.");
-				}
-			}
-		}
-		check = false;
+			day = UserInput.nextDayOfMonth();
 
 		//inputs new hour
-		while (check == false) {
 			System.out.println("\nInput hour start of meeting. (24 hour format)");
-			hour = UserInput.nextInt();
-			if (hour > 0 && hour <= 23) {
-				check = true;
-			} else {
-				System.out.println("\nInvalid hour.");
-			}
-		}
-		check = false;
+			hour = UserInput.nextHour();
 
 		//inputs new minute
-		while (check == false) {
+		
 			System.out.println("\nInput minute start of meeting.");
-			minute = UserInput.nextInt();
-			if (minute > 0 && minute <= 59) {
-				check = true;
-			} else {
-				System.out.println("\nInvalid minute start.");
-			}
-		}
-		check = false;
-
+			minute = UserInput.nextMinute();
+			
 		Calendar newFormat = new GregorianCalendar(year, month, day, hour, minute);
 		return newFormat;
 	}
