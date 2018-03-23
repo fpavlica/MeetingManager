@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Date;
 
-public class Event implements Comparable<Event>{
+public class Event implements Comparable<Event>, Serializable{
 	private String name;
 	private Date startTime, endTime;
 	private int index; //for selecting in the console
@@ -25,6 +26,10 @@ public class Event implements Comparable<Event>{
 	}
 	
 	public Event(Event eventToCopy) {
+		this.copyDataFrom(eventToCopy);
+	}
+	
+	public void copyDataFrom(Event eventToCopy) {		
 		this.name = eventToCopy.getName();
 		this.startTime = eventToCopy.getStartTime();
 		this.endTime = eventToCopy.getEndTime();

@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.TreeSet;
 
-public class DiaryTree {
+public class DiaryTree implements Serializable {
 	private TreeSet<DiaryList> tree;
 	
 	public DiaryTree() {
@@ -37,17 +38,14 @@ public class DiaryTree {
 	public DiaryList search(DiaryList otherList) {
 		//inspired by https://stackoverflow.com/a/25923832
 		DiaryList floor = tree.floor(otherList);
-		if (floor == null) {
-			//name not found
-			return null; //TODO hacky, just skips a part of the code
-		}
-		int temp = floor.compareTo(otherList);
-		if (temp == 0) {
-			//same name, found
-			return floor;
-		} else {
-			//name not found
-			return null;
-		}
+		if (floor != null) {
+			//otherList has left children, floor is the rightmost element in otherList's left subtree
+			if (floor.compareTo(otherList) == 0) {
+				//same name, found
+				return floor;
+			}
+		} 
+		//not found
+		return null;
 	}
 }

@@ -71,6 +71,25 @@ public class UserInput {
 		}
 		return --value; //because months in java start at 0 but at 1 in natural language
 	}
+
+	public static boolean nextAnswerYN() {
+		boolean pass = false;
+		boolean decision = false;
+		do {
+			String answer = UserInput.nextString();
+			if (answer.equalsIgnoreCase("Y")) {
+				decision = true;
+				pass = true;
+			} else if (answer.equalsIgnoreCase("N")) {
+				decision = false;
+				pass = true;
+			} else {
+				System.out.println("Input not recognized. Please respond with 'Y' or 'N'. Try again:");
+				//invalid input, keep pass as false
+			}
+		} while (!pass);
+		return decision;
+	}
 	
 	public static int nextHour() {
 

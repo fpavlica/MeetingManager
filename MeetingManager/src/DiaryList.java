@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class DiaryList implements Comparable<DiaryList>{
+public class DiaryList implements Comparable<DiaryList>, Serializable{
 
 	private LinkedList<Diary> diaries;
 	
