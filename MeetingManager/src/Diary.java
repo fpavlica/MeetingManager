@@ -12,7 +12,9 @@ public class Diary implements Comparable<Diary>, Serializable{
 	private long id;
 	private TreeSet<Event> events;
 	private int currentEventIndex;
-	private transient Stack<EventState> undoStack, redoStack;
+	private enum Action {ADD, REMOVE, EDIT};
+	private transient Stack<Event> undoEventStack, redoEventStack;
+	private transient Stack<Action> undoActionStack, redoActionStack;
 
 	/**
 	 * Constructor, setting the first and last names of the employee this diary belongs to.
@@ -24,8 +26,10 @@ public class Diary implements Comparable<Diary>, Serializable{
 		this.lastname = lastname;
 		this.events = new TreeSet<Event>();
 		this.currentEventIndex = 1; //starting at 1 because it's going to be used for user interaction mostly
-		this.undoStack = new Stack<EventState>();
-		this.redoStack = new Stack<EventState>();
+		this.undoEventStack = new Stack<Event>();
+		this.redoEventStack = new Stack<Event>();
+		this.undoActionStack = new Stack<Action>();
+		this.redoActionStack = new Stack<Action>();
 	}
 	
 	/**
@@ -33,11 +37,16 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 * @param event	the event to add
 	 * @return true if added successfully
 	 */
-	public boolean addEvent(Event event) {
+	private boolean addEventNoStack(Event event) {
 		event.setIndex(currentEventIndex);
 		currentEventIndex++;
-		undoStack.push(new EventState(event, EventState.Action.ADD));
 		return events.add(event);
+	}
+	
+	public boolean addEvent(Event event) {
+		undoEventStack.push(event);
+		undoActionStack.push(Action.ADD);
+		return addEventNoStack(event);
 	}
 	
 	/**
@@ -57,8 +66,13 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 * @return	true if removed successfully (false if the diary did not contain the event)
 	 */
 	public boolean removeEvent(Event event) {
-		currentEventIndex--;
-		undoStack.push(new EventState(event, EventState.Action.REMOVE));
+		undoEventStack.push(event);
+		undoActionStack.push(Action.REMOVE);
+		return removeEventNoStack(event);
+	}
+	
+	private boolean removeEventNoStack(Event event) {
+		//currentEventIndex--;
 		return events.remove(event);
 	}
 	
@@ -74,38 +88,50 @@ public class Diary implements Comparable<Diary>, Serializable{
 	/**
 	 * Undo the last change done to an event in this diary
 	 */
-	public void undo() {
-		EventState lastState = undoStack.pop();
-		redoStack.push(lastState);
-		undoEvent(lastState);
+	public boolean undo() {
+		Action action = undoActionStack.pop();
+		Event event = undoEventStack.pop();
+		redoEventStack.push(event);
+		if (action == Action.ADD) {
+			//last event was added, remove it
+			redoActionStack.push(Action.REMOVE);
+			return removeEventNoStack(event);
+		} else if (action == Action.REMOVE) {
+			//last event was removed, add it back
+			redoActionStack.push(Action.ADD);
+			return addEventNoStack(event);
+		} else if (action == Action.EDIT){
+			//last event was edited, remove the changed one and add the old one
+			Event secondEvent = undoEventStack.pop();
+			redoEventStack.push(secondEvent);
+			redoActionStack.push(Action.EDIT);
+			return editEventNoStack(event, secondEvent);
+		}
+		//if the code somehow manages to get here, nothing was undone and something must be very wrong
+		return false;
 	}
 	
 	/**
 	 * Redo the last undone action
 	 */
-	public void redo() {
-		EventState lastState = redoStack.pop();
-		undoStack.push(lastState);
-		undoEvent(lastState);
+	public boolean redo() {
+		Action action = redoActionStack.pop();
+		Event event =redoEventStack.pop();
+		
+		if (action == Action.ADD) {
+			//last event was added, remove it
+			return removeEvent(event);
+		} else if (action == Action.REMOVE) {
+			//last event was removed, add it back
+			return addEvent(event);
+		} else if (action == Action.EDIT){
+			//last event was edited, remove the changed one and add the old one
+			return editEvent(event, redoEventStack.pop());
+		}
+		//if the code somehow manages to get here, nothing was redone and something must be wrong
+		return false;
 	}
 	
-	/**
-	 * Return an event to its previous state
-	 * @param previousState	the previous state of the event
-	 */
-	private void undoEvent(EventState previousState) {
-		
-		if (previousState.getAction() == EventState.Action.ADD) {
-			//last event was added, should now remove
-			removeEvent(previousState.getEventRef());
-		} else if (previousState.getAction() == EventState.Action.REMOVE) {
-			//last event was removed, should be added back
-			addEvent(previousState.getEventData());
-		} else {//i.e. if (event.getAction() == EventState.Action.EDIT) {
-			//last event was just edited, simply undo edits
-			previousState.undoEdits(); //TODO feels too tightly coupled maybe
-		}
-	}
 	
 	/**
 	 * Find an event in the diary by its start time. O(log(n))
@@ -164,10 +190,21 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 * @param newEventData
 	 * @return
 	 */
+	public boolean editEventNoStack(Event eventToEdit, Event newEventData) {
+		//remove old one, add new one
+		return (removeEventNoStack(eventToEdit) && addEventNoStack(newEventData));
+		
+		/*
+		undoStack.push(new UndoAction(eventToEdit, UndoAction.Action.EDIT));
+		eventToEdit.copyDataFrom(newEventData);	
+		*/
+	
+	}
 	public boolean editEvent(Event eventToEdit, Event newEventData) {
-		undoStack.push(new EventState(eventToEdit, EventState.Action.EDIT));
-		eventToEdit.copyDataFrom(newEventData);
-		return true; //TODO bad
+		undoEventStack.push(eventToEdit);
+		undoEventStack.push(newEventData);
+		undoActionStack.push(Action.EDIT);
+		return editEventNoStack(eventToEdit, newEventData);
 	}
 	
 	/**
@@ -179,14 +216,17 @@ public class Diary implements Comparable<Diary>, Serializable{
 	public boolean editEventConsole(Event editingEvent) {
 		
 		if (editingEvent != null) {
-
-			undoStack.push(new EventState(editingEvent, EventState.Action.EDIT));
+			
+			Event newEvent = new Event(editingEvent);
+			boolean aChangeWasMade = false;
+			
 			// Asks user for event name change
 			System.out.println("\nDo you wish to change the name? Y/N");
 			if (UserInput.nextAnswerYN()) {
 				System.out.println("Please enter a new name for this event:");
 				String newName = UserInput.nextString();
-				editingEvent.setName(newName);
+				newEvent.setName(newName);
+				aChangeWasMade = true;
 			}
 			
 			// Asks user to change start time
@@ -194,7 +234,8 @@ public class Diary implements Comparable<Diary>, Serializable{
 			if (UserInput.nextAnswerYN()) {
 				Calendar newStartFormat = changeTime();
 				Date newStart = newStartFormat.getTime();
-				editingEvent.setStartTime(newStart);//TODO this may fuck up the tree
+				newEvent.setStartTime(newStart);
+				aChangeWasMade = true;
 			} 
 			
 			// Asks user to change ending time
@@ -203,14 +244,14 @@ public class Diary implements Comparable<Diary>, Serializable{
 			
 				Calendar newEndFormat = changeTime();
 				Date newEnd = newEndFormat.getTime();
-				editingEvent.setEndTime(newEnd);
+				newEvent.setEndTime(newEnd);
+				aChangeWasMade = true;
 			}
-			
-			
-			return true;
-		} else {
-			return false;
+			if (aChangeWasMade) {
+				return editEvent(editingEvent, newEvent);
+			}
 		}
+		return false;
 	}
 
 	/**
