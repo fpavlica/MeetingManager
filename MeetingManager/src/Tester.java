@@ -9,16 +9,10 @@ import java.util.Date;
  *
  */
 public class Tester {
+	
 	/**
-	 * @param args
+	 * A major mess
 	 */
-	/*
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		runTests();
-	}
-	*/
-
 	public static void runTests() {
 		Manager manager = new Manager();
 		DiaryTree dtree = manager.getdTree();

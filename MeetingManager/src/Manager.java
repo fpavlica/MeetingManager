@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 public class Manager {
 	
-	private transient Stack<Diary> diaryUndoStack;
+	private transient Stack<Diary> diaryUndoStack, diaryRedoStack;
 	private DiaryTree dTree;
 	
 	/**
@@ -23,8 +23,12 @@ public class Manager {
 		manager.processUserChoices();
 	}
 	
+	/**
+	 * Constructor, initialises the tree and the undo and redo stacks
+	 */
 	public Manager() {
 		diaryUndoStack = new Stack<Diary>();
+		diaryRedoStack = new Stack<Diary>();
 		dTree = new DiaryTree();
 	}
 	
@@ -64,7 +68,12 @@ public class Manager {
 		}while(choice != 9);
 	}
 	
-
+	/**
+	 * Add an event to multiple diaries, only keeping its data
+	 * @param diaries	An array of diaries to add the event to
+	 * @param event	The event to add 
+	 * @return	true if all were added successfully
+	 */
 	public boolean addEventToAll(Diary[] diaries, Event event) {
 		boolean added = true;
 		for (Diary d: diaries) {
@@ -76,32 +85,77 @@ public class Manager {
 		return added;
 	}
 	
+	/**
+	 * Add an event to a diary in the tree
+	 * @param diary	The diary to add the event to
+	 * @param event	The event to add
+	 * @return	true if added successfully
+	 */
 	public boolean addEvent(Diary diary, Event event) {
 		this.diaryUndoStack.push(diary);
 		return diary.addEvent(event);
 	}
 	
+	/**
+	 * Edit an event of a diary 
+	 * @param diary The diary whose event is to be edited
+	 * @param event	The event to edit
+	 * @return	true if edited successfully
+	 */
 	public boolean editEvent(Diary diary, Event event) {
 		this.diaryUndoStack.push(diary);
 		return diary.editEventConsole(event);
 	}
-	public void removeEvent(Diary diary, Event event) {
+	
+	/**
+	 * Remove an event from a diary in the tree
+	 * @param diary	The diary whose event is to be removed
+	 * @param event	The event to remove
+	 * @return	true if removal was successful (i.e. The diary did contain the event)
+	 */
+	public boolean removeEvent(Diary diary, Event event) {
 		this.diaryUndoStack.push(diary);
-		diary.removeEvent(event);
+		return diary.removeEvent(event);
 	}
 	
+	/**
+	 * Print out the tree
+	 */
 	public void printTree() {
 		dTree.print();
 	}
 	
+	/**
+	 * Undo the last change to a Diary in the tree
+	 */
 	public void undo() {
 		if (!diaryUndoStack.isEmpty()) {
-			this.diaryUndoStack.pop().undo();
+			Diary toUndo = diaryUndoStack.pop();
+			diaryRedoStack.push(toUndo);
+			toUndo.undo();
 		} else {
 			System.out.println("Undo stack is empty.");
 		}
 	}
 	
+	/**
+	 * Redo the last undone action
+	 */
+	public void redo() {
+		if (!diaryRedoStack.isEmpty()) {
+			Diary toRedo = diaryRedoStack.pop();
+			diaryUndoStack.push(toRedo);
+			toRedo.redo();
+		} else {
+			System.out.println("Redo stack is empty.");
+		}		
+	}
+	
+	/**
+	 * Find a meeting slot and print how long it took to find it
+	 * @param empDiaries	an array of diaries for which the meeting slot is to be found
+	 * @return	a Diary containing times when everyone is available
+	 */
 	public Diary findMeetingSlotPrintTime(Diary[] empDiaries) {
 
 		Date now1 = new Date();
@@ -112,7 +166,11 @@ public class Manager {
 		return sd;
 	}
 	
-	//TODO move elsewhere
+	/**
+	 * Find a meeting slot for all employees in the array
+	 * @param empDiaries	an array of diaries for which the meeting slot is to be found
+	 * @return	a Diary containing times when everyone is available
+	 */
 	public Diary findMeetingSlot(Diary[] empDiaries) { //TODO probably can be static
 		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
 		for (int i = 0; i < empDiaries.length; i++) {
@@ -129,6 +187,7 @@ public class Manager {
 			}
 		}
 		
+		//TODO add start and end time for searches
 		int timeCounter = 0;
 		boolean wasZero = true;
 		Diary superDiary = new Diary("soup","");
@@ -153,6 +212,11 @@ public class Manager {
 		return superDiary;
 	}
 	
+	/**
+	 * Save the diary tree to a file
+	 * @param filepath	the file path where the diary tree should be saves
+	 * @return	true if saved successfully
+	 */
 	public boolean saveToFile(String filepath) {
 		FileOutputStream fos;
 		ObjectOutputStream oos;
@@ -171,6 +235,11 @@ public class Manager {
 		return false;
 	}
 	
+	/**
+	 * Load the diary tree from a file but first ask the user if they really want to overwrite the current tree.
+	 * @param filepath	the path of the saved diary tree file to load from
+	 * @return true if loaded successfully
+	 */
 	public boolean loadFromFileButAsk(String filepath) {
 		System.out.println("Loading from a file (" + filepath + ") will overwrite the current Set of Diaries.\n"
 				+ "Do you wish to proceed?");
@@ -181,6 +250,11 @@ public class Manager {
 		}
 	}
 	
+	/**
+	 * Load the diary tree from a file, overwriting the current diary tree
+	 * @param filepath	the path of the saved diary tree file to load from
+	 * @return	true if loaded successfully
+	 */
 	public boolean loadFromFile(String filepath) {
 
         FileInputStream fis;
@@ -203,7 +277,7 @@ public class Manager {
 	}
 
 	/**
-	 * @return the dTree
+	 * @return the diaryTree
 	 */
 	public DiaryTree getdTree() {
 		return dTree;
