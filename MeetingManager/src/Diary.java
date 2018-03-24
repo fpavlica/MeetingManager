@@ -6,12 +6,19 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 public class Diary implements Comparable<Diary>, Serializable{
+
+	private static final long serialVersionUID = -790683766257112951L; //compiler-generated, for object saving
 	private String firstname, lastname;
 	private long id;
 	private TreeSet<Event> events;
 	private int currentEventIndex;
 	private transient Stack<EventState> undoStack, redoStack;
 
+	/**
+	 * Constructor, setting the first and last names of the employee this diary belongs to.
+	 * @param firstname	The first name of the employee
+	 * @param lastname	The surname of the employee
+	 */
 	public Diary(String firstname, String lastname) {
 		this.firstname = firstname;
 		this.lastname = lastname;
@@ -21,6 +28,11 @@ public class Diary implements Comparable<Diary>, Serializable{
 		this.redoStack = new Stack<EventState>();
 	}
 	
+	/**
+	 * add an existing event to the diary
+	 * @param event	the event to add
+	 * @return true if added successfully
+	 */
 	public boolean addEvent(Event event) {
 		event.setIndex(currentEventIndex);
 		currentEventIndex++;
@@ -28,44 +40,78 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return events.add(event);
 	}
 	
+	/**
+	 * add an event to the diary
+	 * @param startTime	the start time of the event
+	 * @param endTime	the end time of the event
+	 * @param name		the name of the event
+	 * @return			true if added successfully
+	 */
+	public boolean addEvent(Date startTime, Date endTime, String name) {
+		return addEvent(new Event(startTime,endTime,name));
+	}
+	
+	/**
+	 * Remove an event from the diary
+	 * @param event	The event reference to remove
+	 * @return	true if removed successfully (false if the diary did not contain the event)
+	 */
 	public boolean removeEvent(Event event) {
 		currentEventIndex--;
 		undoStack.push(new EventState(event, EventState.Action.REMOVE));
 		return events.remove(event);
 	}
 	
+	/**
+	 * Prints out all events in the diary
+	 */
 	public void printAllEvents() {
 		for (Event e: events) {
 			System.out.println(e);
 		}
 	}
 	
+	/**
+	 * Undo the last change done to an event in this diary
+	 */
 	public void undo() {
 		EventState lastState = undoStack.pop();
 		redoStack.push(lastState);
 		undoEvent(lastState);
 	}
 	
+	/**
+	 * Redo the last undone action
+	 */
 	public void redo() {
 		EventState lastState = redoStack.pop();
 		undoStack.push(lastState);
 		undoEvent(lastState);
 	}
-	private void undoEvent(EventState event) {
+	
+	/**
+	 * Return an event to its previous state
+	 * @param previousState	the previous state of the event
+	 */
+	private void undoEvent(EventState previousState) {
 		
-		if (event.getAction() == EventState.Action.ADD) {
+		if (previousState.getAction() == EventState.Action.ADD) {
 			//last event was added, should now remove
-			removeEvent(event.getEventRef());
-		} else if (event.getAction() == EventState.Action.REMOVE) {
+			removeEvent(previousState.getEventRef());
+		} else if (previousState.getAction() == EventState.Action.REMOVE) {
 			//last event was removed, should be added back
-			addEvent(event.getEventData());
+			addEvent(previousState.getEventData());
 		} else {//i.e. if (event.getAction() == EventState.Action.EDIT) {
 			//last event was just edited, simply undo edits
-			event.undoEdits(); //TODO feels too tightly coupled maybe
+			previousState.undoEdits(); //TODO feels too tightly coupled maybe
 		}
 	}
 	
-	
+	/**
+	 * Find an event in the diary by its start time. O(log(n))
+	 * @param starttime	the start time of the event to look for
+	 * @return	the found event, or null if the diary does not contain such event
+	 */
 	public Event findEventByStartTime(Date starttime) {
 		Event timeEvent = new Event(starttime, "");	
 		Event floor = events.floor(timeEvent);
@@ -80,6 +126,11 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return null;	
 	}
 	
+	/**
+	 * Edit an event using the console, using its index to specify which event to edit
+	 * @param index	the index of the event to edit
+	 * @return	true if edited successfully
+	 */
 	public boolean editEventByIndex(int index) {
 		Event theEvent = findEventByIndex(index);
 		if (theEvent != null) { //if such event exists
@@ -91,6 +142,12 @@ public class Diary implements Comparable<Diary>, Serializable{
 		}
 	}
 	
+	/**
+	 * Find an event with this index. O(n)
+	 * <p> If two events have the same index (which should not happen), it returns the first one only.
+	 * @param index	the index of the event to look for
+	 * @return	the found event
+	 */
 	public Event findEventByIndex(int index) {
 		//inefficient probably, has to traverse the whole tree to find it
 		for (Event e: events) {
@@ -101,6 +158,12 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return null; //code only gets here if nothing was found.
 	}
 
+	/**
+	 * 
+	 * @param eventToEdit
+	 * @param newEventData
+	 * @return
+	 */
 	public boolean editEvent(Event eventToEdit, Event newEventData) {
 		undoStack.push(new EventState(eventToEdit, EventState.Action.EDIT));
 		eventToEdit.copyDataFrom(newEventData);
@@ -110,7 +173,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	/**
 	 * edits chosen event data by user choice
 	 * 
-	 * @param editingEvent
+	 * @param editingEvent	the event to edit
 	 * @return true if editing was conducted or false if none happened
 	 */
 	public boolean editEventConsole(Event editingEvent) {
@@ -131,7 +194,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 			if (UserInput.nextAnswerYN()) {
 				Calendar newStartFormat = changeTime();
 				Date newStart = newStartFormat.getTime();
-				editingEvent.setStartTime(newStart);
+				editingEvent.setStartTime(newStart);//TODO this may fuck up the tree
 			} 
 			
 			// Asks user to change ending time
@@ -206,10 +269,17 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return s;
 	}
 	
+	/**
+	 * @return the name in the form 'lastname firstname' for sorting
+	 */
 	public String getSortableName() {
 		return lastname + " " + firstname;
 	}
 	
+	/**
+	 * 
+	 * @return the name in the form 'firstname lastname' for displaying
+	 */
 	public String getName() {
 		return firstname + " " + lastname;
 	}

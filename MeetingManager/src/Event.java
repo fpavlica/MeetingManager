@@ -2,10 +2,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Event implements Comparable<Event>, Serializable{
+
+	private static final long serialVersionUID = 2809278511859046638L; //compiler-generated, for object saving
 	private String name;
 	private Date startTime, endTime;
 	private int index; //for selecting in the console
 
+	/**
+	 * Constructor for a new event, setting all its values
+	 * @param startTime	The starttime of the event
+	 * @param endTime	The endtime of the event
+	 * @param name	The name of the event
+	 * @param index	The index of the event in a diary, for selecting it in the console
+	 */
 	public Event(Date startTime, Date endTime, String name, int index) {
 		this.startTime = startTime;
 		this.endTime = endTime;
@@ -13,22 +22,40 @@ public class Event implements Comparable<Event>, Serializable{
 		this.setIndex(index);
 	}
 	
+	/**
+	 * Constructor for a new event, setting its important values
+	 * @param startTime	The starttime of the event
+	 * @param endTime	The endtime of the event
+	 * @param name	The name of the event
+	 */
 	public Event(Date startTime, Date endTime, String name) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.name = name;
 	}
 	
-	
+	/**
+	 * Basic constructor, setting only its starttime and name
+	 * @param startTime	the starttime of the event
+	 * @param name	the name of the event
+	 */
 	public Event(Date startTime, String name) {
 		this.startTime = startTime;
 		this.name = name;
 	}
 	
+	/**
+	 * Constructor which copies data from another event to this new one
+	 * @param eventToCopy	The event whose data is to be copied
+	 */
 	public Event(Event eventToCopy) {
 		this.copyDataFrom(eventToCopy);
 	}
 	
+	/**
+	 * Set all data of this event to that of another event
+	 * @param eventToCopy	The event to copy the data from
+	 */
 	public void copyDataFrom(Event eventToCopy) {		
 		this.name = eventToCopy.getName();
 		this.startTime = eventToCopy.getStartTime();

@@ -16,18 +16,21 @@ public class EventState {
 	public Event getEventData() {
 		return eventData;
 	}
-	/*
-	public EventState(Event event) {
-		this.eventRef = event;
-		this.eventData = new Event(event);
-	}
-	*/
+	
+	/**
+	 * Constructor
+	 * @param event	The event on which the action was performed
+	 * @param action	The action that happened to this event
+	 */
 	public EventState(Event event, Action action) {
 		this.eventRef = event;
 		this.eventData = new Event(event);
 		this.setAction(action);
 	}
 	
+	/**
+	 * Undo edits to an event stored in this eventstate object
+	 */
 	public void undoEdits() {
 		eventRef.copyDataFrom(eventData);
 	}
