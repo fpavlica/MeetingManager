@@ -49,6 +49,9 @@ public class Tester {
 			System.out.println("\nUndoing:\n");
 			manager.undo();
 			dArr[0].printAllEvents();
+			System.out.println("\nRedoing:\n");
+			manager.redo();
+			dArr[0].printAllEvents();
 		} else {
 			System.out.println("Couldn't edit for whatever reason probably because the index doesn't exist");
 		}
