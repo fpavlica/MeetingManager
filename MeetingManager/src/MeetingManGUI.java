@@ -76,7 +76,8 @@ public class MeetingManGUI implements ActionListener{
 	public MeetingManGUI() {
 		manager = new Manager();
 		//TODO temp:
-		manager.loadFromFile("testSave.txt");
+		manager.loadFromFile(DEFAULT_FILEPATH);
+		saved = true;
 	}
 	
     /**
@@ -127,6 +128,7 @@ public class MeetingManGUI implements ActionListener{
     					//save and exit TODO
     					String savePath = DEFAULT_FILEPATH;
     					if (savePath != null) {
+    						manager.saveToFile(DEFAULT_FILEPATH);
 	    					frame.dispose();
 	    					System.exit(0);
     					} else {
@@ -153,21 +155,21 @@ public class MeetingManGUI implements ActionListener{
     public JMenuBar createMenu() 
     {
         JMenuBar menuBar  = new JMenuBar();;
-        JMenu menu = new JMenu("Battle Menu");
+        JMenu menu = new JMenu("Menu");
         JMenuItem menuItem;
        
         menuBar.add(menu);
 
         // A group of JMenuItems. You can create other menu items here if desired
-        menuItem = new JMenuItem("New Game");
+        menuItem = new JMenuItem("Undo");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Load Game");
+        menuItem = new JMenuItem("Redo");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Save Game");
+        menuItem = new JMenuItem("Save");
         menuItem.addActionListener(this);
         menu.add(menuItem);
 
@@ -538,6 +540,7 @@ public class MeetingManGUI implements ActionListener{
     {
         String classname = getClassName(e.getSource());
         JComponent component = (JComponent)(e.getSource());
+        saved = false;
     
         if (classname.equals("JMenuItem"))
         {
@@ -545,18 +548,26 @@ public class MeetingManGUI implements ActionListener{
             String menutext  = menusource.getText();
             
             // Determine which menu option was chosen
-            if (menutext.equals("Load Game"))
+            if (menutext.equals("Undo"))
             {
+            	//undo
+            	manager.undo();
+            	refreshDiaryList();
                 /* BATTLEGUI    Add your code here to handle Load Game **********/
                 //LoadGame();
             }
-            else if (menutext.equals("Save Game"))
+            else if (menutext.equals("Redo"))
             {
+            	manager.redo();
+            	refreshDiaryList();
                 /* BATTLEGUI    Add your code here to handle Save Game **********/
                 //SaveGame();
             }
-            else if (menutext.equals("New Game"))
+            else if (menutext.equals("Save"))
             {
+            	if (manager.saveToFile(DEFAULT_FILEPATH)) {
+            		saved = true;
+            	}
                 /* BATTLEGUI    Add your code here to handle Save Game **********/
                 //NewGame();
             }
@@ -623,17 +634,20 @@ public class MeetingManGUI implements ActionListener{
         return classString.substring(dotIndex+1);
     }
     public void removeDiaries(int[] indices) {
-		int n = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to remove the selected diaries?", 
-				"Confirm exit", JOptionPane.YES_NO_CANCEL_OPTION);
-		System.out.println(n);
-		if (n==JOptionPane.YES_OPTION) {
-			for (int i = indices.length-1; i>=0; i--) {
-				DefaultListModel<Diary> model = ((DefaultListModel<Diary>)this.diaryList.getModel());
-				Diary diary = model.getElementAt(indices[i]);
-				model.remove(indices[i]);
-				manager.removeDiary(diary);
+    	if (indices.length != 0){
+	    		
+			int n = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to remove the selected diaries?", 
+					"Confirm exit", JOptionPane.YES_NO_CANCEL_OPTION);
+			System.out.println(n);
+			if (n==JOptionPane.YES_OPTION) {
+				for (int i = indices.length-1; i>=0; i--) {
+					DefaultListModel<Diary> model = ((DefaultListModel<Diary>)this.diaryList.getModel());
+					Diary diary = model.getElementAt(indices[i]);
+					model.remove(indices[i]);
+					manager.removeDiary(diary);
+				}
 			}
-		}
+    	}
     }
     public void viewDiary(Diary diary) {
     	if (diary != null) {

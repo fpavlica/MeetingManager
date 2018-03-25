@@ -10,27 +10,33 @@ import java.util.List;
 import java.util.Stack;
 import java.util.TreeSet;
 
+
 public class Manager {
 	
-	private transient Stack<Diary> diaryUndoStack, diaryRedoStack;
+	private transient Stack<Diary> undoDiaryStack, redoDiaryStack;
 	private DiaryTree dTree;
+	private enum Action {ADD_DIARY, REMOVE_DIARY, EDIT_NAME, EDIT_EVENT};
+	private Stack<Action> undoActionStack, redoActionStack;
 	
-	/**
+	/*
 	 * The main class
 	 * 
 	 * @param args Default parameters
-	 */
+	 *//*
 	public static void main(String[] args) {
 		Manager manager = new Manager();
 		manager.processUserChoices();
 	}
+	*/
 	
 	/**
 	 * Constructor, initialises the tree and the undo and redo stacks
 	 */
 	public Manager() {
-		diaryUndoStack = new Stack<Diary>();
-		diaryRedoStack = new Stack<Diary>();
+		undoDiaryStack = new Stack<Diary>();
+		undoActionStack = new Stack<Action>();
+		redoDiaryStack = new Stack<Diary>();
+		redoActionStack = new Stack<Action>();
 		dTree = new DiaryTree();
 	}
 	
@@ -94,7 +100,8 @@ public class Manager {
 	 * @return	true if added successfully
 	 */
 	public boolean addEvent(Diary diary, Event event) {
-		this.diaryUndoStack.push(diary);
+		this.undoDiaryStack.push(diary);
+		this.undoActionStack.push(Action.EDIT_EVENT);
 		return diary.addEvent(event);
 	}
 	
@@ -104,9 +111,18 @@ public class Manager {
 	 * @param event	The event to edit
 	 * @return	true if edited successfully
 	 */
+	@Deprecated
 	public boolean editEvent(Diary diary, Event event) {
-		this.diaryUndoStack.push(diary);
+		//console only
+		this.undoDiaryStack.push(diary);
+		this.undoActionStack.push(Action.EDIT_EVENT);
 		return diary.editEventConsole(event);
+	}
+	
+	public boolean editEvent(Diary diary, Event oldEvent, Event newEvent) {
+		this.undoDiaryStack.push(diary);
+		this.undoActionStack.push(Action.EDIT_EVENT);
+		return diary.editEvent(oldEvent, newEvent);
 	}
 	
 	/**
@@ -116,16 +132,27 @@ public class Manager {
 	 * @return	true if removal was successful (i.e. The diary did contain the event)
 	 */
 	public boolean removeEvent(Diary diary, Event event) {
-		this.diaryUndoStack.push(diary);
+		this.undoDiaryStack.push(diary);
+		this.undoActionStack.push(Action.EDIT_EVENT);
 		return diary.removeEvent(event);
 	}
 	
 	public boolean removeDiary(Diary toRemove) {
-		//TODO add undo function
+		undoDiaryStack.push(toRemove);
+		undoActionStack.push(Action.REMOVE_DIARY);
+		return removeDiaryNoStack(toRemove);
+	}
+	public boolean removeDiaryNoStack(Diary toRemove) {
 		return dTree.remove(toRemove);
 	}
 	
 	public boolean addDiary(Diary toAdd) {
+		undoDiaryStack.push(toAdd);
+		undoActionStack.push(Action.ADD_DIARY);
+		return addDiaryNoStack(toAdd);
+	}
+	
+	public boolean addDiaryNoStack(Diary toAdd) {
 		return dTree.add(toAdd);
 	}
 	
@@ -136,7 +163,18 @@ public class Manager {
 	public boolean editDiaryName(Diary oldDiary, String firstname, String lastname) {
 		Diary newDiary = new Diary(firstname, lastname);
 		newDiary.setEvents(oldDiary.getEvents());
-		return (removeDiary(oldDiary) && addDiary(newDiary));		
+		return editDiaryName(oldDiary, newDiary);
+	}
+	
+	public boolean editDiaryName(Diary oldDiary, Diary newDiary) {
+		undoDiaryStack.push(oldDiary);
+		undoDiaryStack.push(newDiary);
+		undoActionStack.push(Action.EDIT_NAME);
+		return editDiaryNameNoStack(oldDiary, newDiary);
+	}
+	
+	public boolean editDiaryNameNoStack(Diary oldDiary, Diary newDiary) {
+		return (removeDiaryNoStack(oldDiary) && addDiaryNoStack(newDiary));		
 	}
 	
 	/**
@@ -149,27 +187,63 @@ public class Manager {
 	/**
 	 * Undo the last change to a Diary in the tree
 	 */
-	public void undo() {
-		if (!diaryUndoStack.isEmpty()) {
-			Diary toUndo = diaryUndoStack.pop();
-			diaryRedoStack.push(toUndo);
-			toUndo.undo();
+	public boolean undo() {
+		
+		if (!undoActionStack.isEmpty()) {
+			Action action = undoActionStack.pop();
+			Diary toUndo = undoDiaryStack.pop();
+
+			if (action == Action.ADD_DIARY) {
+				//last event was added, remove it
+				//redoActionStack.push(Action.REMOVE_DIARY);
+				return removeDiaryNoStack(toUndo);
+			} else if (action == Action.REMOVE_DIARY) {
+				//last event was removed, add it back
+				//redoActionStack.push(Action.ADD_DIARY);
+				return addDiaryNoStack(toUndo);
+			} else if (action == Action.EDIT_NAME){
+				//last event was edited, remove the changed one and add the old one
+				Diary secondDiary = undoDiaryStack.pop();
+				//redoEventStack.push(secondEvent);
+				//redoActionStack.push(Action.EDIT_DIARY);
+				return editDiaryName(toUndo, secondDiary.getFirstname(), secondDiary.getLastname());
+			} else if (action == Action.EDIT_EVENT) {
+				return toUndo.undo();
+			}
+			//diaryRedoStack.push(toUndo);
 		} else {
 			System.out.println("Undo stack is empty.");
 		}
+		return false;
 	}
 	
 	/**
 	 * Redo the last undone action
 	 */
-	public void redo() {
-		if (!diaryRedoStack.isEmpty()) {
-			Diary toRedo = diaryRedoStack.pop();
-			diaryUndoStack.push(toRedo);
-			toRedo.redo();
+	public boolean redo() {
+		if (!redoActionStack.isEmpty()) {
+			Action action = redoActionStack.pop();
+			Diary toRedo = redoDiaryStack.pop();
+			undoDiaryStack.push(toRedo);
+			undoActionStack.push(action);
+			
+			if (action == Action.ADD_DIARY) {
+				//last event was added, remove it
+				return removeDiary(toRedo);
+			} else if (action == Action.REMOVE_DIARY) {
+				//last event was removed, add it back
+				return addDiary(toRedo);
+			} else if (action == Action.EDIT_NAME){
+				//last event was edited, remove the changed one and add the old one
+				return editDiaryName(toRedo, redoDiaryStack.pop()); 
+			} else if (action == Action.EDIT_EVENT) {
+				return toRedo.redo();
+			}
 		} else {
 			System.out.println("Redo stack is empty.");
-		}		
+		}	
+		//if the code somehow manages to get here, nothing was redone and something must be wrong
+		return false;	
 	}
 	
 	/**

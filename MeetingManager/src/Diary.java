@@ -213,6 +213,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 * @param editingEvent	the event to edit
 	 * @return true if editing was conducted or false if none happened
 	 */
+	@Deprecated
 	public boolean editEventConsole(Event editingEvent) {
 		
 		if (editingEvent != null) {
