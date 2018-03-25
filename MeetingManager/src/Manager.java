@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -118,6 +120,25 @@ public class Manager {
 		return diary.removeEvent(event);
 	}
 	
+	public boolean removeDiary(Diary toRemove) {
+		//TODO add undo function
+		return dTree.remove(toRemove);
+	}
+	
+	public boolean addDiary(Diary toAdd) {
+		return dTree.add(toAdd);
+	}
+	
+	public boolean addDiary(String firstname, String lastname) {
+		return addDiary(new Diary(firstname, lastname));
+	}
+	
+	public boolean editDiaryName(Diary oldDiary, String firstname, String lastname) {
+		Diary newDiary = new Diary(firstname, lastname);
+		newDiary.setEvents(oldDiary.getEvents());
+		return (removeDiary(oldDiary) && addDiary(newDiary));		
+	}
+	
 	/**
 	 * Print out the tree
 	 */
@@ -172,9 +193,59 @@ public class Manager {
 	 * @return	a Diary containing times when everyone is available
 	 */
 	public Diary findMeetingSlot(Diary[] empDiaries) { //TODO probably can be static
+		
+		List<Diary> empList = new LinkedList<Diary>();
+		for (Diary d: empDiaries) {
+			empList.add(d);
+		}
+		return findMeetingSlot(empList);
+		/*
 		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
 		for (int i = 0; i < empDiaries.length; i++) {
 			for (Event event : empDiaries[i].getEvents()) {
+				EventTime startTime = new EventTime(event.getStartTime(), true);
+				EventTime endTime = new EventTime(event.getEndTime(), false);
+				if(!timeset.add(startTime)) {
+					//if an EventTime with this time is already in the set
+					timeset.remove(startTime);
+				}
+				if (!timeset.add(endTime)) {
+					timeset.remove(endTime);
+				}
+			}
+		}
+		
+		//TODO add start and end time for searches
+		int timeCounter = 0;
+		boolean wasZero = true;
+		Diary superDiary = new Diary("soup","");
+		Event av = new Event(new Date(0), "Available");
+		superDiary.addEvent(av);
+		for (EventTime et : timeset) {
+			if (et.isStart()) {
+				timeCounter++;
+			}else {
+				timeCounter--;
+			}
+			if (timeCounter == 0) {
+				Event available = new Event(et.getTime(), "Available");
+				superDiary.addEvent(available);
+				wasZero = true;
+			} else if (timeCounter == 1 && wasZero) {
+				superDiary.getEvents().last().setEndTime(et.getTime());
+				wasZero = false;
+			}
+		}
+		superDiary.getEvents().last().setEndTime(new Date(Long.MAX_VALUE));
+		return superDiary;
+		*/
+	}
+	
+	public Diary findMeetingSlot(List<Diary> empDiaries) {
+
+		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
+		for (Diary d: empDiaries) {
+			for (Event event : d.getEvents()) {
 				EventTime startTime = new EventTime(event.getStartTime(), true);
 				EventTime endTime = new EventTime(event.getEndTime(), false);
 				if(!timeset.add(startTime)) {
@@ -276,6 +347,10 @@ public class Manager {
         return false;
 	}
 
+	public Diary[] getDiaryArray() {
+		return dTree.toArray();
+	}
+	
 	/**
 	 * @return the diaryTree
 	 */

@@ -1,7 +1,9 @@
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.TreeSet;
 
-public class DiaryTree implements Serializable {
+public class DiaryTree implements Serializable, Iterable<DiaryList> {
 	private static final long serialVersionUID = 3708656793582367768L; //compiler-generated, for object saving
 	private TreeSet<DiaryList> tree;
 	
@@ -38,6 +40,18 @@ public class DiaryTree implements Serializable {
 		}
 	}
 	
+	public boolean remove(Diary toRemove) {
+		//find the list that contains this diary
+		Diary temp = new Diary(toRemove.getFirstname(), toRemove.getLastname());
+		DiaryList tempList = new DiaryList(temp);
+		DiaryList remList = this.searchByKey(tempList);
+		if (remList.hasOnlyOneElement()) {
+			return this.tree.remove(remList);
+		} else {
+			return remList.remove(toRemove);
+		}
+	}
+	
 	/**
 	 * Print out the tree
 	 */
@@ -46,7 +60,6 @@ public class DiaryTree implements Serializable {
 			dl.print();
 		}
 	}
-	
 	/**
 	 * Finds a DiaryList in the tree using compareTo() and returns it if it exists, otherwise returns null
 	 * @param otherList the list with a name that is to be found in the tree 
@@ -65,4 +78,23 @@ public class DiaryTree implements Serializable {
 		//not found
 		return null;
 	}
+	
+	public Diary[] toArray() {
+		//bad
+		ArrayList<Diary> al = new ArrayList<Diary>();
+		for (DiaryList dl : tree) {
+			for (Diary d: dl.getDiaries()) {
+				al.add(d);
+			}
+		}
+		Diary[] tempDArr = new Diary[al.size()];
+		return al.toArray(tempDArr);
+	}
+
+	@Override
+	public Iterator<DiaryList> iterator() {
+		// TODO Auto-generated method stub
+		return tree.iterator();
+	}
+
 }

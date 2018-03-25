@@ -294,20 +294,24 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return newFormat;
 	}
 	
-	@Override
-	public int compareTo(Diary otherDiary) {
-		String comparingName = otherDiary.getSortableName();
-		return this.getSortableName().compareTo(comparingName);
-	}
-	
-	@Override
-	public String toString() {
+	public String getAllInfo() {
 		//TODO temp
 		String s =  firstname + " " + lastname;
 		for (Event e: events) {
 			s+="\n" + e;
 		}
 		return s;
+	}
+	
+	@Override
+	public int compareTo(Diary otherDiary) {
+		String comparingName = otherDiary.getSortableName();
+		return this.getSortableName().compareToIgnoreCase(comparingName);
+	}
+	
+	@Override
+	public String toString() {
+		return getName();
 	}
 	
 	/**
@@ -371,5 +375,12 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 */
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @param events the events to set
+	 */
+	public void setEvents(TreeSet<Event> events) {
+		this.events = events;
 	}
 }

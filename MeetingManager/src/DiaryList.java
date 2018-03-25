@@ -1,7 +1,8 @@
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.LinkedList;
 
-public class DiaryList implements Comparable<DiaryList>, Serializable{
+public class DiaryList implements Comparable<DiaryList>, Serializable, Iterable<Diary>{
 
 	private static final long serialVersionUID = -669192092115463780L; //compiler-generated, for object saving
 	private LinkedList<Diary> diaries;
@@ -48,13 +49,19 @@ public class DiaryList implements Comparable<DiaryList>, Serializable{
 	public boolean add(LinkedList<Diary> toAdd) {
 		return diaries.addAll(toAdd);
 	}
+	public boolean remove(Diary toRemove) {
+		return diaries.remove(toRemove);
+	}
+	public boolean hasOnlyOneElement() {
+		return this.diaries.getFirst() ==this.diaries.getLast();
+	}
 	
 	/**
 	 * Print out the diary list to the console
 	 */
 	public void print() {
 		for (Diary diary : diaries) {
-			System.out.println(diary);
+			System.out.println(diary.getAllInfo());
 		}
 	}
 	
@@ -66,6 +73,11 @@ public class DiaryList implements Comparable<DiaryList>, Serializable{
 	public int compareTo(DiaryList otherList) {
 		Diary comparingTo = otherList.getDiaries().getFirst();
 		return this.getDiaries().getFirst().compareTo(comparingTo);
+	}
+	@Override
+	public Iterator iterator() {
+		// TODO Auto-generated method stub
+		return diaries.iterator();
 	}
 	/**
 	 * @return the diaries
@@ -79,5 +91,6 @@ public class DiaryList implements Comparable<DiaryList>, Serializable{
 	public void setDiaries(LinkedList<Diary> diaries) {
 		this.diaries = diaries;
 	}
+
 
 }
