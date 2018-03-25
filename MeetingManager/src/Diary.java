@@ -26,10 +26,19 @@ public class Diary implements Comparable<Diary>, Serializable{
 		this.lastname = lastname;
 		this.events = new TreeSet<Event>();
 		this.currentEventIndex = 1; //starting at 1 because it's going to be used for user interaction mostly
+		initStacks();
+	}
+	public void initStacks(){
 		this.undoEventStack = new Stack<Event>();
 		this.redoEventStack = new Stack<Event>();
 		this.undoActionStack = new Stack<Action>();
 		this.redoActionStack = new Stack<Action>();
+	}
+	
+	public void makeSureStacksAreInitialised() {
+		if (undoActionStack == null || redoActionStack == null) {
+			initStacks();
+		}
 	}
 	
 	/**
@@ -44,6 +53,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	}
 	
 	public boolean addEvent(Event event) {
+		makeSureStacksAreInitialised();
 		undoEventStack.push(event);
 		undoActionStack.push(Action.ADD);
 		return addEventNoStack(event);
@@ -66,6 +76,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	 * @return	true if removed successfully (false if the diary did not contain the event)
 	 */
 	public boolean removeEvent(Event event) {
+		makeSureStacksAreInitialised();
 		undoEventStack.push(event);
 		undoActionStack.push(Action.REMOVE);
 		return removeEventNoStack(event);
@@ -201,6 +212,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	
 	}
 	public boolean editEvent(Event eventToEdit, Event newEventData) {
+		makeSureStacksAreInitialised();
 		undoEventStack.push(eventToEdit);
 		undoEventStack.push(newEventData);
 		undoActionStack.push(Action.EDIT);
@@ -296,7 +308,6 @@ public class Diary implements Comparable<Diary>, Serializable{
 	}
 	
 	public String getAllInfo() {
-		//TODO temp
 		String s =  firstname + " " + lastname;
 		for (Event e: events) {
 			s+="\n" + e;

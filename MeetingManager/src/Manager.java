@@ -4,7 +4,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -83,6 +85,15 @@ public class Manager {
 	 * @return	true if all were added successfully
 	 */
 	public boolean addEventToAll(Diary[] diaries, Event event) {
+		List<Diary> dlist = new LinkedList<Diary>();
+		for (Diary d: diaries) {
+			dlist.add(d);
+		}
+		return addEventToAll(dlist, event);
+	}
+	
+
+	public boolean addEventToAll(List<Diary> diaries, Event event) {
 		boolean added = true;
 		for (Diary d: diaries) {
 			if (!addEvent(d, new Event(event))) {
@@ -92,6 +103,7 @@ public class Manager {
 		}
 		return added;
 	}
+	
 	
 	/**
 	 * Add an event to a diary in the tree
@@ -195,19 +207,24 @@ public class Manager {
 
 			if (action == Action.ADD_DIARY) {
 				//last event was added, remove it
-				//redoActionStack.push(Action.REMOVE_DIARY);
+				redoActionStack.push(Action.REMOVE_DIARY);
+				redoDiaryStack.push(toUndo);
 				return removeDiaryNoStack(toUndo);
 			} else if (action == Action.REMOVE_DIARY) {
 				//last event was removed, add it back
-				//redoActionStack.push(Action.ADD_DIARY);
+				redoActionStack.push(Action.ADD_DIARY);
+				redoDiaryStack.push(toUndo);
 				return addDiaryNoStack(toUndo);
 			} else if (action == Action.EDIT_NAME){
 				//last event was edited, remove the changed one and add the old one
 				Diary secondDiary = undoDiaryStack.pop();
-				//redoEventStack.push(secondEvent);
-				//redoActionStack.push(Action.EDIT_DIARY);
-				return editDiaryName(toUndo, secondDiary.getFirstname(), secondDiary.getLastname());
+				redoActionStack.push(Action.EDIT_NAME);
+				redoDiaryStack.push(toUndo);
+				redoDiaryStack.push(secondDiary);
+				return editDiaryName(toUndo, secondDiary);
 			} else if (action == Action.EDIT_EVENT) {
+				redoActionStack.push(Action.EDIT_EVENT);
+				redoDiaryStack.push(toUndo);
 				return toUndo.undo();
 			}
 			//diaryRedoStack.push(toUndo);
@@ -251,6 +268,7 @@ public class Manager {
 	 * @param empDiaries	an array of diaries for which the meeting slot is to be found
 	 * @return	a Diary containing times when everyone is available
 	 */
+	@Deprecated
 	public Diary findMeetingSlotPrintTime(Diary[] empDiaries) {
 
 		Date now1 = new Date();
@@ -266,34 +284,43 @@ public class Manager {
 	 * @param empDiaries	an array of diaries for which the meeting slot is to be found
 	 * @return	a Diary containing times when everyone is available
 	 */
-	public Diary findMeetingSlot(Diary[] empDiaries) { //TODO probably can be static
+	public Diary findMeetingSlot(Diary[] empDiaries) { //probably can be static?
 		
 		List<Diary> empList = new LinkedList<Diary>();
 		for (Diary d: empDiaries) {
 			empList.add(d);
 		}
 		return findMeetingSlot(empList);
-		/*
+	}
+	
+	public Diary findMeetingSlot(List<Diary> empDiaries, Date lowerBound, Date upperBound) {
+		
 		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
-		for (int i = 0; i < empDiaries.length; i++) {
-			for (Event event : empDiaries[i].getEvents()) {
-				EventTime startTime = new EventTime(event.getStartTime(), true);
-				EventTime endTime = new EventTime(event.getEndTime(), false);
-				if(!timeset.add(startTime)) {
-					//if an EventTime with this time is already in the set
-					timeset.remove(startTime);
-				}
-				if (!timeset.add(endTime)) {
-					timeset.remove(endTime);
+		long lowerBoundTime = lowerBound.getTime();
+		long upperBoundTime = upperBound.getTime();
+		for (Diary d: empDiaries) {
+			for (Event event : d.getEvents()) {
+				Date startDate = event.getStartTime();
+				Date endDate = event.getEndTime();
+				if (startDate.getTime() >= lowerBoundTime && endDate.getTime() <= upperBoundTime) {
+						//if it is between the searching bounds
+					EventTime startTime = new EventTime(startDate, true);
+					EventTime endTime = new EventTime(endDate, false);
+					if(!timeset.add(startTime)) {
+						//if an EventTime with this time is already in the set
+						timeset.remove(startTime);
+					}
+					if (!timeset.add(endTime)) {
+						timeset.remove(endTime);
+					}
 				}
 			}
 		}
 		
-		//TODO add start and end time for searches
 		int timeCounter = 0;
 		boolean wasZero = true;
-		Diary superDiary = new Diary("soup","");
-		Event av = new Event(new Date(0), "Available");
+		Diary superDiary = new Diary("Available","");
+		Event av = new Event(lowerBound, "Available");
 		superDiary.addEvent(av);
 		for (EventTime et : timeset) {
 			if (et.isStart()) {
@@ -310,11 +337,16 @@ public class Manager {
 				wasZero = false;
 			}
 		}
-		superDiary.getEvents().last().setEndTime(new Date(Long.MAX_VALUE));
+		superDiary.getEvents().last().setEndTime(upperBound);
 		return superDiary;
-		*/
 	}
 	
+	public Diary findMeetingSlot(List<Diary> empDiaries) {
+		Calendar startCal = new GregorianCalendar(1001,0,0,0,0);
+		Calendar endCal = new GregorianCalendar(3001, 0,0,0,0);
+		return findMeetingSlot(empDiaries, startCal.getTime(), endCal.getTime());
+	}
+/*
 	public Diary findMeetingSlot(List<Diary> empDiaries) {
 
 		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
@@ -332,7 +364,7 @@ public class Manager {
 			}
 		}
 		
-		//TODO add start and end time for searches
+		//xTODO add start and end time for searches
 		int timeCounter = 0;
 		boolean wasZero = true;
 		Diary superDiary = new Diary("soup","");
@@ -355,8 +387,7 @@ public class Manager {
 		}
 		superDiary.getEvents().last().setEndTime(new Date(Long.MAX_VALUE));
 		return superDiary;
-	}
-	
+	}*/
 	/**
 	 * Save the diary tree to a file
 	 * @param filepath	the file path where the diary tree should be saves

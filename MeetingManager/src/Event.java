@@ -17,7 +17,7 @@ public class Event implements Comparable<Event>, Serializable{
 	 */
 	public Event(Date startTime, Date endTime, String name, int index) {
 		this.startTime = startTime;
-		this.endTime = endTime;
+		this.setEndTime (endTime);
 		this.name = name;
 		this.setIndex(index);
 	}
@@ -30,7 +30,7 @@ public class Event implements Comparable<Event>, Serializable{
 	 */
 	public Event(Date startTime, Date endTime, String name) {
 		this.startTime = startTime;
-		this.endTime = endTime;
+		this.setEndTime(endTime);
 		this.name = name;
 	}
 	
@@ -71,7 +71,7 @@ public class Event implements Comparable<Event>, Serializable{
 	@Override
 	public String toString() {
 		//TODO maybe not like this
-		return name +", from " + startTime + " to " + endTime + "\t\t"+ index;
+		return name +", from " + startTime + " to " + endTime + "\t\t";
 	}
 
 	/**
@@ -113,7 +113,13 @@ public class Event implements Comparable<Event>, Serializable{
 	 * @param endTime the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
+		if (endTime.getTime() >= this.startTime.getTime()) {
+			this.endTime = endTime;
+		} else {
+			//switch the two to make sure starttime is not before endtime
+			this.endTime = this.startTime;
+			this.startTime = endTime;
+		}
 	}
 	/**
 	 * @return the index
