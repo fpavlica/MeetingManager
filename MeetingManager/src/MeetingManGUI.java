@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Stack;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -44,21 +45,25 @@ public class MeetingManGUI implements ActionListener{
 
 	private Manager manager;
 	
-    private JFrame mainFrame, diaryFrame, editEventFrame, nameFrame;
+    private JFrame mainFrame, diaryFrame, editEventFrame, nameFrame, taskFrame, taskNameFrame;
     private JButton viewDiaryB, addDiaryB, removeDiaryB, addEventB, removeEventB, editEventB, findSlotB,
-    		refreshDiariesB, editNameB, addToAllB;
+    		refreshDiariesB, editNameB, addToAllB, addTaskB, removeTaskB, closeTasksB, showTasksB;
     public static final String VIEW_DIARY = "View Diary", ADD_DIARY = "Add Diary", REMOVE_DIARY = "Remove Diary", 
     		EDIT_NAME = "Edit Name", FIND_SLOT = "Find a Meeting Slot", ADD_TO_ALL = "Add an event to selected diaries",
     		ADD_EVENT = "Add Event", REMOVE_EVENT = "Remove Event", EDIT_EVENT = "Edit Event", SAVE_NAME = "Save", 
-    		CANCEL_NAME = "Cancel", REFRESH_DIARIES = "Refresh (sort)", SAVE_EVENT = "Save ", CANCEL_EVENT = "Cancel ";
+    		CANCEL_NAME = "Cancel", REFRESH_DIARIES = "Refresh (sort)", SAVE_EVENT = "Save ", CANCEL_EVENT = "Cancel ",
+    		ADD_TASK = "Add task", REMOVE_TASK = "Remove task", SAVE_TASK = "Save  ", CANCEL_TASK = "Cancel  ",
+    		CLOSE_TASKS = "Close", SHOW_TASKS = "Show To-Do List";
     private JList<Diary> diaryList;
     private JList<Event> eventList;
+	private JList<String> taskList;
     private JSpinner[] startSpinners, endSpinners;
     private boolean saved, addingToAll; 
-	private JTextField firstnameField, surnameField, eventNameField;
+	private JTextField firstnameField, surnameField, eventNameField, taskField;
 
 	private Diary editingDiary, diaryBeingViewed;
 	private Event editingEvent;
+
     
 	/**
 	 * Main method. create and show a gui.
@@ -248,6 +253,8 @@ public class MeetingManGUI implements ActionListener{
 		refreshDiariesB.addActionListener(this);
 		addToAllB = new JButton(ADD_TO_ALL);
 		addToAllB.addActionListener(this);
+		showTasksB = new JButton(SHOW_TASKS);
+		showTasksB.addActionListener(this);
 		
 		
 		buttonPanel.add(viewDiaryB);
@@ -256,6 +263,7 @@ public class MeetingManGUI implements ActionListener{
 		buttonPanel.add(removeDiaryB);
 		buttonPanel.add(findSlotB);
 		buttonPanel.add(addToAllB);
+		buttonPanel.add(showTasksB);
 		//buttonPanel.add(refreshDiariesB);
 		
 		panel.add(buttonPanel);
@@ -338,6 +346,110 @@ public class MeetingManGUI implements ActionListener{
 		
         return panel;
     }
+    
+    /**
+     * create and show the to-do frame
+     */
+    public void createAndRunToDoFrame() {
+    	JFrame frame = new JFrame("To-Do List");
+    	this.taskFrame = frame;
+    	
+    	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    	frame.setContentPane(createToDoFrame());
+    	
+    	frame.setSize(800, 400);
+    	frame.setVisible(true);
+    }
+    
+    /**
+     * Create a frame with the to do list 
+     * @return	the content pane created by this method
+     */
+    public Container createToDoFrame() {
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+        
+        this.taskList = new JList<String>();
+		taskList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		taskList.setLayoutOrientation(JList.VERTICAL);
+		taskList.setFont(new Font("Sans Serif", Font.PLAIN, 20));
+		refreshTaskList();
+				
+		JScrollPane listScroller = new JScrollPane(taskList);
+		listScroller.setPreferredSize(new Dimension(250, 80));
+		panel.add(listScroller);
+		
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
+		JLabel nameText = new JLabel("To Do");
+		nameText.setFont(new Font("Sans Serif", Font.PLAIN, 20));
+		buttonPanel.add(nameText);
+		
+		addTaskB = new JButton(ADD_TASK);
+		addTaskB.addActionListener(this);
+		removeTaskB = new JButton(REMOVE_TASK);
+		removeTaskB.addActionListener(this);
+		this.closeTasksB = new JButton(CLOSE_TASKS);
+		closeTasksB.addActionListener(this);
+		
+		buttonPanel.add(addTaskB);
+		buttonPanel.add(removeTaskB);
+		buttonPanel.add(closeTasksB);
+		panel.add(buttonPanel);
+		
+        return panel;
+    }
+    
+
+
+    /**
+	 * Creates and displays a add task frame.
+     */
+    public void createAndRunTaskNameFrame() {
+    	JFrame frame = new JFrame("new task");
+    	this.taskNameFrame = frame;
+    	
+    	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    	frame.setContentPane(createTaskNameFrame());
+    	
+    	frame.setSize(600, 280);
+    	frame.setVisible(true);
+    }
+    
+    /**
+     * Creates a frame for adding a task to the to-do list
+     * @return the content pane created by this method.
+     */
+    public Container createTaskNameFrame() {
+    	
+        JPanel panel = new JPanel(new BorderLayout());
+        
+        	JPanel tasknameRow = new JPanel(new BorderLayout());
+        	JLabel tasknameLabel = new JLabel("Task:" );
+            tasknameLabel.setFont(new Font("Sans Serif", Font.PLAIN, 26));
+        	tasknameRow.add(tasknameLabel);
+        	
+        	taskField = new JTextField(20);
+        	tasknameRow.add(taskField, BorderLayout.LINE_END);
+        
+        panel.add(tasknameRow);
+        
+        //adding buttons to save or discard changes
+        JPanel buttons = new JPanel(new GridLayout(1,2));
+        JButton saveButton = new JButton(SAVE_TASK);
+        saveButton.addActionListener(this);
+        buttons.add(saveButton);
+        
+        JButton closeButton = new JButton(CANCEL_TASK);
+        closeButton.addActionListener(this);
+        buttons.add(closeButton);
+        
+        panel.add(buttons, BorderLayout.PAGE_END);
+        return panel;
+    }
+
 
 
     /**
@@ -664,6 +776,24 @@ public class MeetingManGUI implements ActionListener{
             } else if (buttonText == CANCEL_EVENT) {
             	editEventFrame.dispose();
             }
+            else if (buttonText == SHOW_TASKS) {
+            	this.createAndRunToDoFrame();
+            } else if (buttonText == ADD_TASK) {
+            	this.createAndRunTaskNameFrame();
+            } else if (buttonText == REMOVE_TASK) {
+            	saved = false;
+            	manager.removeFromTaskStack(this.taskList.getSelectedValue());
+            	refreshTaskList();
+            } else if (buttonText == SAVE_TASK) {
+            	saved = false;
+            	manager.addToTaskStack(taskField.getText());   
+            	refreshTaskList();
+            	this.taskNameFrame.dispose();
+            } else if (buttonText == CANCEL_TASK) {
+            	this.taskNameFrame.dispose();
+            } else if (buttonText == CLOSE_TASKS) {
+            	this.taskFrame.dispose();
+            }
         }  
     }
 
@@ -784,6 +914,21 @@ public class MeetingManGUI implements ActionListener{
 			listmodel.addElement(e);
 		}
 		eventList.setModel(listmodel);
+    }
+    
+    /**
+     * refresh the to-do list in the listmodel of the taskList
+     */
+    public void refreshTaskList() {
+    	DefaultListModel<String> listmodel = new DefaultListModel<String>();
+    	List<String> tasks = manager.getTaskStack(); //was supposed to add them to the top of the list but no time left to fix this
+    	if (tasks != null) {
+	    		
+	    	for (String task: tasks) {
+	    		listmodel.addElement(task);
+	    	}
+    	}
+    	taskList.setModel(listmodel);
     }
     
     /**
