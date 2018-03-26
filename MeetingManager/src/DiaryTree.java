@@ -1,6 +1,7 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 import java.util.TreeSet;
 
 /**
@@ -13,12 +14,14 @@ import java.util.TreeSet;
 public class DiaryTree implements Serializable, Iterable<DiaryList> {
 	private static final long serialVersionUID = 3708656793582367768L; //compiler-generated, for object saving
 	private TreeSet<DiaryList> tree;
+	private Stack<String> taskStack; //this really, really shouldn't be here but it makes saving easier and I have no time
 	
 	/**
 	 * Constructor which initialises the tree of diary lists
 	 */
 	public DiaryTree() {
 		tree = new TreeSet<DiaryList>();
+		taskStack = new Stack<String>(); //noooooo :'(
 	}
 	
 	/**
@@ -112,6 +115,20 @@ public class DiaryTree implements Serializable, Iterable<DiaryList> {
 	public Iterator<DiaryList> iterator() {
 		// TODO Auto-generated method stub
 		return tree.iterator();
+	}
+
+	/**
+	 * @return the taskStack
+	 */
+	public Stack<String> getTaskStack() {
+		return taskStack;
+	}
+
+	/**
+	 * @param taskStack the taskStack to set
+	 */
+	public void setTaskStack(Stack<String> taskStack) {
+		this.taskStack = taskStack;
 	}
 
 }

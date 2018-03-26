@@ -23,6 +23,7 @@ public class Manager {
 	private DiaryTree dTree;
 	private enum Action {ADD_DIARY, REMOVE_DIARY, EDIT_NAME, EDIT_EVENT};
 	private Stack<Action> undoActionStack, redoActionStack;
+	private Stack<String> taskStack;
 	
 	
 	/**
@@ -34,6 +35,7 @@ public class Manager {
 		redoDiaryStack = new Stack<Diary>();
 		redoActionStack = new Stack<Action>();
 		dTree = new DiaryTree();
+		taskStack = dTree.getTaskStack();
 	}
 	
 	/**
@@ -466,6 +468,11 @@ public class Manager {
 			fis = new FileInputStream(filepath);
 	        ois= new ObjectInputStream(fis);
 	        this.dTree = (DiaryTree) ois.readObject(); //Reads the tree object
+	        this.taskStack = (Stack<String>) dTree.getTaskStack();
+	        if (taskStack == null) {
+	        	dTree.setTaskStack(new Stack<String>());
+		        this.taskStack = (Stack<String>) dTree.getTaskStack();
+	        }
 	        ois.close();
 	        fis.close();
 	        return true;
@@ -478,7 +485,23 @@ public class Manager {
 		}
         return false;
 	}
-
+	
+	/**
+	 * add a task to the to-do list
+	 * @param task	the name of the task that is to be added
+	 * @return	true if added successfully
+	 */
+	public boolean addToTaskStack(String task) {
+		return taskStack.add(task);
+	}
+	/**
+	 * remove a task from the to-do list 
+	 * @param task	the name of the task to remove
+	 * @return	true if removed successfully, ie the task was in the stack before
+	 */
+	public boolean removeFromTaskStack(String task) {
+		return taskStack.remove(task);
+	}
 	/**
 	 * get an array of diaries from the tree
 	 * @return the sorted array of diaries from the tree
@@ -492,6 +515,13 @@ public class Manager {
 	 */
 	public DiaryTree getdTree() {
 		return dTree;
+	}
+
+	/**
+	 * @return the taskStack
+	 */
+	public Stack<String> getTaskStack() {
+		return taskStack;
 	}
 
 }
