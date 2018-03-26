@@ -715,7 +715,7 @@ public class MeetingManGUI implements ActionListener{
             JButton button = (JButton)(e.getSource());
             String buttonText = button.getText();
             //setActionCommand and getActionCommand should've been used instead of just the text 
-            if (buttonText == VIEW_DIARY) { //using == because it feels safer than equals() and works with constants
+            if (buttonText == VIEW_DIARY) { //using == because it feels safer than equals() and works with the constants
             	diaryBeingViewed = diaryList.getSelectedValue();
             	viewDiary(diaryBeingViewed);
             } else if (buttonText == REMOVE_DIARY) {
