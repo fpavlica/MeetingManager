@@ -9,6 +9,11 @@ public class EventTime implements Comparable<EventTime> {
 	private Date time;
 	private boolean isStart;
 	
+	/**
+	 * Constructor, setting a time and a boolean value which is true if the time was a start time
+	 * @param time	the time
+	 * @param isStart	true if it was a start time
+	 */
 	public EventTime(Date time, boolean isStart) {
 		this.time = time;
 		this.isStart = isStart;

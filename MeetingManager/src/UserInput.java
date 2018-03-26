@@ -57,12 +57,19 @@ public class UserInput {
 		} while (!pass);
 		return value;
 	}
-	
+	/**
+	 * read the next string from the console
+	 * @return	the string read from the console
+	 */
 	public static String nextString() {
 		Scanner s = new Scanner(System.in);
 		return s.nextLine();
 	}
-
+	
+	/**
+	 * get a number between 1 and 12 from the console
+	 * @return the entered value minus 1
+	 */
 	public static int nextMonth() {
 		int value = nextInt();
 		while (value<1 || value>12) {
@@ -72,6 +79,10 @@ public class UserInput {
 		return --value; //because months in java start at 0 but at 1 in natural language
 	}
 
+	/**
+	 * get  an answer from the user in the form 'Y' or 'N'  
+	 * @return	true if the user enters 'Y', false if 'N', case-insensitive
+	 */
 	public static boolean nextAnswerYN() {
 		boolean pass = false;
 		boolean decision = false;
@@ -91,6 +102,11 @@ public class UserInput {
 		return decision;
 	}
 	
+
+	/**
+	 * get a number between 0 and 23 from the console
+	 * @return the entered value
+	 */
 	public static int nextHour() {
 
 		int value = nextInt();
@@ -100,7 +116,11 @@ public class UserInput {
 		}
 		return value;
 	}
-	
+
+	/**
+	 * get a number between 0 and 59 from the console
+	 * @return the entered value
+	 */
 	public static int nextMinute() {
 
 		int value = nextInt();
@@ -110,8 +130,11 @@ public class UserInput {
 		}
 		return value;
 	}
-	
-	public static int nextDayOfMonth() {
+
+	/**
+	 * get a number between 1 and 31 from the console
+	 * @return the entered value
+	 */ static int nextDayOfMonth() {
 
 		int value = nextInt();
 		while (value<1 || value>31) {
