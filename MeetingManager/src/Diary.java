@@ -5,6 +5,12 @@ import java.util.GregorianCalendar;
 import java.util.Stack;
 import java.util.TreeSet;
 
+/**
+ * Class containing data and methods relating a specific employee's diary.
+ * 
+ * @author AC12001 17/18 group 2
+ *
+ */
 public class Diary implements Comparable<Diary>, Serializable{
 
 	private static final long serialVersionUID = -790683766257112951L; //compiler-generated, for object saving
@@ -28,6 +34,10 @@ public class Diary implements Comparable<Diary>, Serializable{
 		this.currentEventIndex = 1; //starting at 1 because it's going to be used for user interaction mostly
 		initStacks();
 	}
+	
+	/**
+	 * initialise all undo and redo stacks
+	 */
 	public void initStacks(){
 		this.undoEventStack = new Stack<Event>();
 		this.redoEventStack = new Stack<Event>();
@@ -35,6 +45,9 @@ public class Diary implements Comparable<Diary>, Serializable{
 		this.redoActionStack = new Stack<Action>();
 	}
 	
+	/**
+	 * if either of the action undo/redo stacks are null, initialise them to new, empty values
+	 */
 	public void makeSureStacksAreInitialised() {
 		if (undoActionStack == null || redoActionStack == null) {
 			initStacks();
@@ -42,7 +55,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	}
 	
 	/**
-	 * add an existing event to the diary
+	 * add an existing event to the diary without adding it to the undo stack.
 	 * @param event	the event to add
 	 * @return true if added successfully
 	 */
@@ -52,6 +65,11 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return events.add(event);
 	}
 	
+	/**
+	 * add an existing event to the diary and add it to the undo stack.
+	 * @param event	the event to add
+	 * @return true if added successfully
+	 */
 	public boolean addEvent(Event event) {
 		makeSureStacksAreInitialised();
 		undoEventStack.push(event);
@@ -71,7 +89,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	}
 	
 	/**
-	 * Remove an event from the diary
+	 * Remove an event from the diary and add this action to the undo stack
 	 * @param event	The event reference to remove
 	 * @return	true if removed successfully (false if the diary did not contain the event)
 	 */
@@ -81,7 +99,12 @@ public class Diary implements Comparable<Diary>, Serializable{
 		undoActionStack.push(Action.REMOVE);
 		return removeEventNoStack(event);
 	}
-	
+
+	/**
+	 * Remove an event from the diary without adding it to the undo stack
+	 * @param event	The event reference to remove
+	 * @return	true if removed successfully (false if the diary did not contain the event)
+	 */
 	private boolean removeEventNoStack(Event event) {
 		//currentEventIndex--;
 		return events.remove(event);
@@ -98,6 +121,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	
 	/**
 	 * Undo the last change done to an event in this diary
+	 * @return true if undone successfully
 	 */
 	public boolean undo() {
 		Action action = undoActionStack.pop();
@@ -124,6 +148,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 	
 	/**
 	 * Redo the last undone action
+	 * @return true if redone successfully
 	 */
 	public boolean redo() {
 		Action action = redoActionStack.pop();
@@ -196,10 +221,10 @@ public class Diary implements Comparable<Diary>, Serializable{
 	}
 
 	/**
-	 * 
-	 * @param eventToEdit
-	 * @param newEventData
-	 * @return
+	 * Remove the old event and add the new one without adding the change to the undo stack.
+	 * @param eventToEdit	The event to remove
+	 * @param newEventData	The event to add
+	 * @return	true if changed successfully
 	 */
 	public boolean editEventNoStack(Event eventToEdit, Event newEventData) {
 		//remove old one, add new one
@@ -211,6 +236,12 @@ public class Diary implements Comparable<Diary>, Serializable{
 		*/
 	
 	}
+	/**
+	 * Remove the old event and add the new one, adding the change to the undo stack.
+	 * @param eventToEdit	The event to remove
+	 * @param newEventData	The event to add
+	 * @return	true if changed successfully
+	 */
 	public boolean editEvent(Event eventToEdit, Event newEventData) {
 		makeSureStacksAreInitialised();
 		undoEventStack.push(eventToEdit);
@@ -219,7 +250,7 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return editEventNoStack(eventToEdit, newEventData);
 	}
 	
-	/**
+	/*
 	 * edits chosen event data by user choice
 	 * 
 	 * @param editingEvent	the event to edit
@@ -307,14 +338,22 @@ public class Diary implements Comparable<Diary>, Serializable{
 		return newFormat;
 	}
 	
+	/**
+	 * Get all info about all events in a diary as a String, each event on a new line. For console purposes.
+	 * @return	String containing information about every event in the diary
+	 */
 	public String getAllInfo() {
 		String s =  firstname + " " + lastname;
 		for (Event e: events) {
-			s+="\n" + e;
+			s+="\n" + e + "\t\t" + e.getIndex();
 		}
 		return s;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * Compares the name of the employee this diary belongs to in the form 'lastname firstname'
+	 */
 	@Override
 	public int compareTo(Diary otherDiary) {
 		String comparingName = otherDiary.getSortableName();

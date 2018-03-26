@@ -12,7 +12,11 @@ import java.util.List;
 import java.util.Stack;
 import java.util.TreeSet;
 
-
+/**
+ * Manages the whole MeetingManager project
+ * @author AC12001 17/18 group 2
+ *
+ */
 public class Manager {
 	
 	private transient Stack<Diary> undoDiaryStack, redoDiaryStack;
@@ -20,16 +24,6 @@ public class Manager {
 	private enum Action {ADD_DIARY, REMOVE_DIARY, EDIT_NAME, EDIT_EVENT};
 	private Stack<Action> undoActionStack, redoActionStack;
 	
-	/*
-	 * The main class
-	 * 
-	 * @param args Default parameters
-	 *//*
-	public static void main(String[] args) {
-		Manager manager = new Manager();
-		manager.processUserChoices();
-	}
-	*/
 	
 	/**
 	 * Constructor, initialises the tree and the undo and redo stacks
@@ -92,7 +86,12 @@ public class Manager {
 		return addEventToAll(dlist, event);
 	}
 	
-
+	/**
+	 * Add an event to multiple diaries, only keeping its data
+	 * @param diaries	the list of diaries to add the event to
+	 * @param event	the event to add to the diaries
+	 * @return	true if all added successfully
+	 */
 	public boolean addEventToAll(List<Diary> diaries, Event event) {
 		boolean added = true;
 		for (Diary d: diaries) {
@@ -131,6 +130,13 @@ public class Manager {
 		return diary.editEventConsole(event);
 	}
 	
+	/**
+	 * Edit an event in the specified diary
+	 * @param diary	The diary where the event is to be changed
+	 * @param oldEvent	the event to change
+	 * @param newEvent	the new event
+	 * @return	true if edited succefsully
+	 */
 	public boolean editEvent(Diary diary, Event oldEvent, Event newEvent) {
 		this.undoDiaryStack.push(diary);
 		this.undoActionStack.push(Action.EDIT_EVENT);
@@ -148,36 +154,79 @@ public class Manager {
 		this.undoActionStack.push(Action.EDIT_EVENT);
 		return diary.removeEvent(event);
 	}
-	
+
+	/** 
+	 * Remove a new diary from the tree, pushing the change onto the undo stack.
+	 * @param toRemove the Diary to remove
+	 * @return true if added successfully
+	 */
 	public boolean removeDiary(Diary toRemove) {
 		undoDiaryStack.push(toRemove);
 		undoActionStack.push(Action.REMOVE_DIARY);
 		return removeDiaryNoStack(toRemove);
 	}
+	
+	/** 
+	 * Remove a new diary from the tree without pushing the change onto the undo stack.
+	 * @param toRemove the Diary to remove
+	 * @return true if added successfully
+	 */
 	public boolean removeDiaryNoStack(Diary toRemove) {
 		return dTree.remove(toRemove);
 	}
-	
+
+	/**
+	 * 
+	 * Add a new diary to the tree without pushing the change onto the undo stack.
+	 * @param toAdd	the Diary to add
+	 * @return	true if added successfully
+	 */
 	public boolean addDiary(Diary toAdd) {
 		undoDiaryStack.push(toAdd);
 		undoActionStack.push(Action.ADD_DIARY);
 		return addDiaryNoStack(toAdd);
 	}
 	
+	/**
+	 * 
+	 * Add a new diary to the tree, pushing the change onto the undo stack.
+	 * @param toAdd	the Diary to add
+	 * @return	true if added successfully
+	 */
 	public boolean addDiaryNoStack(Diary toAdd) {
 		return dTree.add(toAdd);
 	}
 	
+	/**
+	 * Add a new diary to the tree with the selected first and last names, pushing the change onto the undo stack.
+	 * @param firstname	the firstname of the new diary
+	 * @param lastname	the lastname of the new diary
+	 * @return	true if added successfully
+	 */
 	public boolean addDiary(String firstname, String lastname) {
 		return addDiary(new Diary(firstname, lastname));
 	}
-	
+
+	/**
+	 * 
+	 * Remove a diary from a tree and add a new one without pushing it onto the undo stack, somehow keeping all the events.
+	 * @param oldDiary	The diary that is to be changed
+	 * @param firstname	The new firstname
+	 * @param lastname	the new lastname
+	 * @return	true if edited successfully
+	 */
 	public boolean editDiaryName(Diary oldDiary, String firstname, String lastname) {
 		Diary newDiary = new Diary(firstname, lastname);
 		newDiary.setEvents(oldDiary.getEvents());
 		return editDiaryName(oldDiary, newDiary);
 	}
-	
+
+	/**
+	 * Remove a diary from a tree and add a new one and push it onto the undo stack, somehow keeping all the events.
+	 * @param oldDiary	The diary that is to be changed
+	 * @param newDiary	The new diary name
+	 * @return	true if edited successfully
+	 */
 	public boolean editDiaryName(Diary oldDiary, Diary newDiary) {
 		undoDiaryStack.push(oldDiary);
 		undoDiaryStack.push(newDiary);
@@ -185,6 +234,12 @@ public class Manager {
 		return editDiaryNameNoStack(oldDiary, newDiary);
 	}
 	
+	/**
+	 * Remove a diary from a tree and add a new one without pushing it onto the undo stack, somehow keeping all the events.
+	 * @param oldDiary	The diary that is to be changed
+	 * @param newDiary	The new diary name
+	 * @return	true if edited successfully
+	 */
 	public boolean editDiaryNameNoStack(Diary oldDiary, Diary newDiary) {
 		return (removeDiaryNoStack(oldDiary) && addDiaryNoStack(newDiary));		
 	}
@@ -198,6 +253,7 @@ public class Manager {
 	
 	/**
 	 * Undo the last change to a Diary in the tree
+	 * @return true if undone successfully
 	 */
 	public boolean undo() {
 		
@@ -236,6 +292,7 @@ public class Manager {
 	
 	/**
 	 * Redo the last undone action
+	 * @return true if undone successfully
 	 */
 	public boolean redo() {
 		if (!redoActionStack.isEmpty()) {
@@ -280,7 +337,7 @@ public class Manager {
 	}
 	
 	/**
-	 * Find a meeting slot for all employees in the array
+	 * Find a meeting slot for all employees in the array between years 1000 and 3000.
 	 * @param empDiaries	an array of diaries for which the meeting slot is to be found
 	 * @return	a Diary containing times when everyone is available
 	 */
@@ -292,7 +349,14 @@ public class Manager {
 		}
 		return findMeetingSlot(empList);
 	}
-	
+
+	/**
+	 * Find a meeting slot for all employees in the array between the specified bounds
+	 * @param empDiaries	a list of diaries for which the meeting slot is to be found
+	 * @param lowerBound	the lower bound of the search
+	 * @param upperBound	the upper bound of the search
+	 * @return	a Diary containing times when everyone is available
+	 */
 	public Diary findMeetingSlot(List<Diary> empDiaries, Date lowerBound, Date upperBound) {
 		
 		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
@@ -341,53 +405,16 @@ public class Manager {
 		return superDiary;
 	}
 	
+	/**
+	 * Find a meeting slot for all employees in the array at times between the years 1000 and 3000.
+	 * @param empDiaries	an list of diaries for which the meeting slot is to be found
+	 * @return	a Diary containing times when everyone is available
+	 */
 	public Diary findMeetingSlot(List<Diary> empDiaries) {
 		Calendar startCal = new GregorianCalendar(1001,0,0,0,0);
 		Calendar endCal = new GregorianCalendar(3001, 0,0,0,0);
 		return findMeetingSlot(empDiaries, startCal.getTime(), endCal.getTime());
 	}
-/*
-	public Diary findMeetingSlot(List<Diary> empDiaries) {
-
-		TreeSet<EventTime> timeset = new TreeSet<EventTime>();
-		for (Diary d: empDiaries) {
-			for (Event event : d.getEvents()) {
-				EventTime startTime = new EventTime(event.getStartTime(), true);
-				EventTime endTime = new EventTime(event.getEndTime(), false);
-				if(!timeset.add(startTime)) {
-					//if an EventTime with this time is already in the set
-					timeset.remove(startTime);
-				}
-				if (!timeset.add(endTime)) {
-					timeset.remove(endTime);
-				}
-			}
-		}
-		
-		//xTODO add start and end time for searches
-		int timeCounter = 0;
-		boolean wasZero = true;
-		Diary superDiary = new Diary("soup","");
-		Event av = new Event(new Date(0), "Available");
-		superDiary.addEvent(av);
-		for (EventTime et : timeset) {
-			if (et.isStart()) {
-				timeCounter++;
-			}else {
-				timeCounter--;
-			}
-			if (timeCounter == 0) {
-				Event available = new Event(et.getTime(), "Available");
-				superDiary.addEvent(available);
-				wasZero = true;
-			} else if (timeCounter == 1 && wasZero) {
-				superDiary.getEvents().last().setEndTime(et.getTime());
-				wasZero = false;
-			}
-		}
-		superDiary.getEvents().last().setEndTime(new Date(Long.MAX_VALUE));
-		return superDiary;
-	}*/
 	/**
 	 * Save the diary tree to a file
 	 * @param filepath	the file path where the diary tree should be saves
@@ -452,6 +479,10 @@ public class Manager {
         return false;
 	}
 
+	/**
+	 * get an array of diaries from the tree
+	 * @return the sorted array of diaries from the tree
+	 */
 	public Diary[] getDiaryArray() {
 		return dTree.toArray();
 	}

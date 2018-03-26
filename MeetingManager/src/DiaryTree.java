@@ -3,6 +3,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+/**
+ * A tree multiset-like data structure for Diaries. Diaries with the same key are stored in a linked list. 
+ * Probably would've been easier to have a nextDiary reference in the Diary class instead of 
+ * using the LinkedList library class but it's too late now.
+ * @author AC12001 17/18 group 2
+ *
+ */
 public class DiaryTree implements Serializable, Iterable<DiaryList> {
 	private static final long serialVersionUID = 3708656793582367768L; //compiler-generated, for object saving
 	private TreeSet<DiaryList> tree;
@@ -40,6 +47,11 @@ public class DiaryTree implements Serializable, Iterable<DiaryList> {
 		}
 	}
 	
+	/**
+	 * Remove a diary from the tree
+	 * @param toRemove the diary to remove
+	 * @return	true if removed successfully (the diary did exist in the tree);
+	 */
 	public boolean remove(Diary toRemove) {
 		//find the list that contains this diary
 		Diary temp = new Diary(toRemove.getFirstname(), toRemove.getLastname());
@@ -60,6 +72,7 @@ public class DiaryTree implements Serializable, Iterable<DiaryList> {
 			dl.print();
 		}
 	}
+	
 	/**
 	 * Finds a DiaryList in the tree using compareTo() and returns it if it exists, otherwise returns null
 	 * @param otherList the list with a name that is to be found in the tree 
@@ -79,6 +92,10 @@ public class DiaryTree implements Serializable, Iterable<DiaryList> {
 		return null;
 	}
 	
+	/**
+	 * Convert the tree to an array by first converting it to an ArrayList
+	 * @return the sorted array of diaries from the tree
+	 */
 	public Diary[] toArray() {
 		//bad
 		ArrayList<Diary> al = new ArrayList<Diary>();

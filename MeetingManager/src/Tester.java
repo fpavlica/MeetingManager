@@ -5,13 +5,15 @@ import java.util.Date;
  */
 
 /**
- * @author fpavlica
+ * @author AC12001 17/18 group 2
  *
  */
 public class Tester {
 	
 	/**
-	 * A major mess
+	 * A major mess.
+	 * 
+	 * Used to do some automatic tests in the console version.
 	 */
 	public static void runTests() {
 		Manager manager = new Manager();

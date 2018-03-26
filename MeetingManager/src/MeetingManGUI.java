@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Calendar;
@@ -30,6 +32,12 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 
+/**
+ * A GUI class for the meeting manager.
+ * It is ugly but we had no time
+ * @author AC12001 17/18 group 2
+ *
+ */
 public class MeetingManGUI implements ActionListener{
 
 	protected static final String DEFAULT_FILEPATH = "defaultsave.ser";
@@ -52,6 +60,10 @@ public class MeetingManGUI implements ActionListener{
 	private Diary editingDiary, diaryBeingViewed;
 	private Event editingEvent;
     
+	/**
+	 * Main method. create and show a gui.
+	 * @param args	default parameters for a main method
+	 */
 	public static void main(String[] args) {
     	
         //Schedule a job for the event-dispatching thread:
@@ -65,9 +77,11 @@ public class MeetingManGUI implements ActionListener{
         });
     }
 	
+	/**
+	 * Constructor, initialises a Manager object and loads the meetingmanager from the default save file
+	 */
 	public MeetingManGUI() {
 		manager = new Manager();
-		//TODO temp:
 		manager.loadFromFile(DEFAULT_FILEPATH);
 		saved = true;
 	}
@@ -86,7 +100,7 @@ public class MeetingManGUI implements ActionListener{
         MeetingManGUI meetgui = new MeetingManGUI();
         meetgui.mainFrame = frame;
         frame.setJMenuBar(meetgui.createMenu());
-        frame.setContentPane(meetgui.createContentPane()); //TODO probably change this slightly when a show events button
+        frame.setContentPane(meetgui.createContentPane()); 
         frame.addWindowListener(meetgui.createConfirmExitDialog(frame));
 
         // Display the window, setting the size
@@ -117,7 +131,6 @@ public class MeetingManGUI implements ActionListener{
     						"Confirm exit", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
     				System.out.println(n);
     				if (n == 0) {
-    					//save and exit TODO
     					String savePath = DEFAULT_FILEPATH;
     					if (savePath != null) {
     						manager.saveToFile(DEFAULT_FILEPATH);
@@ -144,6 +157,10 @@ public class MeetingManGUI implements ActionListener{
     }
     
 
+    /**
+     * Create a simple menu for the main frame
+     * @return the JMenuBar created by this method
+     */
     public JMenuBar createMenu() 
     {
         JMenuBar menuBar  = new JMenuBar();;
@@ -170,6 +187,10 @@ public class MeetingManGUI implements ActionListener{
         return menuBar;
     }
 
+    /**
+     * Create the main frame. Contains diaries and relevant buttons
+     * @return the content pane created by this method
+     */
     public Container createContentPane() 
     {
     	JPanel bigPanel = new JPanel();
@@ -184,6 +205,22 @@ public class MeetingManGUI implements ActionListener{
 		diaryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		diaryList.setLayoutOrientation(JList.VERTICAL);
 		diaryList.setFont(new Font("Sans Serif", Font.PLAIN, 20));
+
+		diaryList.addMouseListener(new MouseAdapter() {
+			// from https://stackoverflow.com/a/4344762
+		    public void mouseClicked(MouseEvent mouseE) {
+		        JList<Diary> list = (JList<Diary>)mouseE.getSource();
+		        if (mouseE.getClickCount() == 2) {
+		
+		            // Double-click detected
+		            int index = list.locationToIndex(mouseE.getPoint());
+	            	diaryBeingViewed = diaryList.getModel().getElementAt(index);
+	            	viewDiary(diaryBeingViewed);
+		            
+		        }
+		    }
+		});
+		
 		refreshDiaryList();
 				
 		JScrollPane listScroller = new JScrollPane(diaryList);
@@ -219,7 +256,7 @@ public class MeetingManGUI implements ActionListener{
 		buttonPanel.add(removeDiaryB);
 		buttonPanel.add(findSlotB);
 		buttonPanel.add(addToAllB);
-		buttonPanel.add(refreshDiariesB);
+		//buttonPanel.add(refreshDiariesB);
 		
 		panel.add(buttonPanel);
 		
@@ -232,72 +269,31 @@ public class MeetingManGUI implements ActionListener{
 		labelPanel.add(label);
 		bigPanel.add(labelPanel);
 		
-        //JPanel grid = new JPanel(new GridLayout(gridSize,gridSize));
-        //buttonArray = new JButton[numButtons];
-        
-        /*
-        for (int i=0; i<numButtons; i++)
-        {
-            buttonArray[i] = new JButton(" ");
-            
-            buttonArray[i].setBackground(DEFAULT_COLOR);
-			// This label is used to identify which button was clicked in the action listener
-            buttonArray[i].setActionCommand("" + i); // String "0", "1" etc.
-            buttonArray[i].addActionListener(this);
-            grid.add(buttonArray[i]);
-        }
-        panel.add(grid);
-        
-        
-        JPanel info = new JPanel();
-        info.setLayout(new BoxLayout(info, BoxLayout.PAGE_AXIS));
-        
-        //adding the score counter
-        scoreIndicator = new JLabel("Shots fired: 0");
-        scoreIndicator.setBorder(BorderFactory.createEmptyBorder(10, 20, 0, 180));
-        scoreIndicator.setFont(new Font("Sans Serif", Font.PLAIN, 32));
-        info.add(scoreIndicator);
-        
-        
-        //adding the hit indicator label
-        hitIndicator = new JLabel("");
-        hitIndicator.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 0));
-        hitIndicator.setFont(new Font("Sans Serif", Font.PLAIN, 26));
-        info.add(hitIndicator);
-        
-        //adding a label for displaying when a ship has been sunk
-        sunkShipIndicator = new JLabel("");
-        sunkShipIndicator.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 0));
-        sunkShipIndicator.setFont(new Font("Sans Serif", Font.PLAIN, 26));
-        info.add(sunkShipIndicator);
 		
-        
-        panel.add(info);
-        */
         return bigPanel;
     }
     
 
-	/*
-	 * Creates and displays a leader board frame.
-	 * @param players The list of Players on the leader board.
+	/**
+	 * Creates and displays a diary frame with all its events.
+	 * @param diary the diary to display
 	 */
     public void createAndRunDiaryFrame(Diary diary) {
     	JFrame frame = new JFrame("Diary");
     	this.diaryFrame = frame;
     	
     	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    	frame.setContentPane(createDiaryFrame(diary));//TODO
+    	frame.setContentPane(createDiaryFrame(diary));
     	
     	frame.setSize(1000, 400);
     	frame.setVisible(true);
     }
     
 
-    /*
-     * Creates the leader board frame content pane
-     * @param players The list of names and scores on the leader board.
-     * @return The content pane of the leader board.
+    /**
+     * Create a frame for displaying the events of a diary and some related buttons too
+     * @param diary	The diary whose events are to be shown
+     * @return	the content pane created by this method
      */
     public Container createDiaryFrame(Diary diary) {
 
@@ -344,8 +340,9 @@ public class MeetingManGUI implements ActionListener{
     }
 
 
-	/**
-	 * Creates and displays an options frame.
+    /**
+	 * Creates and displays a change name frame.
+     * @param diary the diary whose name is to be changed
      */
     public void createAndRunNameFrame(Diary diary) {
     	JFrame frame = new JFrame("Employee name");
@@ -359,7 +356,8 @@ public class MeetingManGUI implements ActionListener{
     }
     
     /**
-     * Creates a pane with options to change the fleet size.
+     * Creates a pane with text fields to change the name
+     * @param diary the diary whose name is to be changed
      * @return the content pane created by this method.
      */
     public Container createNameFrame(Diary diary) {
@@ -412,7 +410,8 @@ public class MeetingManGUI implements ActionListener{
     
 
 	/**
-	 * Creates and displays an options frame.
+	 * Creates and displays an event editor frame.
+	 * @param event the event that is to be edited
      */
     public void createAndRunEventFrame(Event event) {
     	JFrame frame = new JFrame("Event");
@@ -426,7 +425,8 @@ public class MeetingManGUI implements ActionListener{
     }
     
     /**
-     * Creates a pane with options to change the fleet size.
+     * Creates a pane with options to create an event
+	 * @param event the event that is to be edited. the frame will display values of this event by default.
      * @return the content pane created by this method.
      */
     public Container createEventFrame(Event event) {
@@ -492,6 +492,11 @@ public class MeetingManGUI implements ActionListener{
         return panel;
     }
     
+    /**
+     * Get values from a date which can then be used as the default values for spinners
+     * @param date	The date from which to retrieve the values
+     * @return	a 5-member array of default spinner values, in the order: year, month, day of month, hour of day, minute
+     */
     private int[] getDefaultSpinnerValues(Date date) {
     	int[] vals = new int[5];
 
@@ -505,6 +510,12 @@ public class MeetingManGUI implements ActionListener{
 		return vals;
     }
     
+    /**
+     * Creates a very simple and fairly wrong date/time picker
+     * @param defaultValues	The default values of this date/time picker
+     * @param isStart	if the date/time picker is for a starttime. this is probably bad coding practice but it works.
+     * @return	the JPanel with the simple date/time picker
+     */
     private JPanel createDateTimePicker(int[] defaultValues, boolean isStart) { 
     	JPanel panel = new JPanel(new GridLayout(0,1));
         
@@ -556,7 +567,7 @@ public class MeetingManGUI implements ActionListener{
     {
         String classname = getClassName(e.getSource());
         //JComponent component = (JComponent)(e.getSource());
-        saved = false;
+        //saved = false;
     
         if (classname.equals("JMenuItem"))
         {
@@ -567,12 +578,16 @@ public class MeetingManGUI implements ActionListener{
             if (menutext.equals("Undo"))
             {
             	//undo
-            	manager.undo();
+            	if (manager.undo()) {
+            		saved = false;
+            	}
             	refreshDiaryList();
             }
             else if (menutext.equals("Redo"))
             {
-            	manager.redo();
+            	if (manager.redo()) {
+            		saved = false;
+            	}
             	refreshDiaryList();
             }
             else if (menutext.equals("Save"))
@@ -591,12 +606,14 @@ public class MeetingManGUI implements ActionListener{
             	diaryBeingViewed = diaryList.getSelectedValue();
             	viewDiary(diaryBeingViewed);
             } else if (buttonText == REMOVE_DIARY) {
+            	saved = false;
             	this.removeDiaries(diaryList.getSelectedIndices());
             } else if (buttonText == ADD_DIARY) {
-            	System.out.println(ADD_DIARY);
+            	saved = false;
             	this.editingDiary = null;
             	createAndRunNameFrame(null);
             } else if (buttonText == EDIT_NAME) {
+            	saved = false;
             	editingDiary = diaryList.getSelectedValue();
             	if (editingDiary != null) {
             		createAndRunNameFrame(editingDiary);
@@ -604,6 +621,7 @@ public class MeetingManGUI implements ActionListener{
             } else if (buttonText == FIND_SLOT) {
             	this.findSlot(diaryList.getSelectedValuesList());
             } else if (buttonText == ADD_TO_ALL) {
+            	saved = false;
             	addingToAll = true;
             	editingEvent = null;
             	createAndRunEventFrame(editingEvent);
@@ -611,20 +629,24 @@ public class MeetingManGUI implements ActionListener{
             	this.refreshDiaryList();
             }            
             else if (buttonText == ADD_EVENT) {
+            	saved = false;
             	addingToAll = false;
             	editingEvent = null;
             	this.createAndRunEventFrame(editingEvent);
             	//add event frame
             	
             } else if (buttonText == REMOVE_EVENT) {
+            	saved = false;
             	this.removeEvents(this.eventList.getSelectedIndices());
             	this.refreshEventList();
             } else if (buttonText == EDIT_EVENT) {
             	//add event frame with values
+            	saved = false;
             	addingToAll = false;
             	this.editingEvent = eventList.getSelectedValue();
             	this.createAndRunEventFrame(editingEvent);
             } else if (buttonText == SAVE_NAME) {
+            	saved = false;
             	if (editingDiary == null) {
             		addDiary(this.firstnameField.getText(), this.surnameField.getText());
             	} else {
@@ -636,6 +658,7 @@ public class MeetingManGUI implements ActionListener{
             	nameFrame.dispose();
             }
             else if (buttonText == SAVE_EVENT) {
+            	saved = false;
             	this.editEvent();
             	editEventFrame.dispose();
             } else if (buttonText == CANCEL_EVENT) {
@@ -646,6 +669,7 @@ public class MeetingManGUI implements ActionListener{
 
 	/**
      *  Returns the class name
+     *  @return the class name
      */
     protected String getClassName(Object o) 
     {
@@ -653,6 +677,10 @@ public class MeetingManGUI implements ActionListener{
         int dotIndex = classString.lastIndexOf(".");
         return classString.substring(dotIndex+1);
     }
+    /**
+     * Remove diaries from the diary tree/list at the selected diarylist indices
+     * @param indices	the diarylist indices from which the diaries are to be removed
+     */
     public void removeDiaries(int[] indices) {
     	if (indices.length != 0){
 	    		
@@ -670,6 +698,10 @@ public class MeetingManGUI implements ActionListener{
     	}
     }
     
+    /**
+     * Remove events from a diary at the selected eventlist indices
+     * @param indices	the indices of the eventList from which the events are to be removed
+     */
     public void removeEvents(int[] indices) {
 
     	if (indices.length != 0){
@@ -687,29 +719,50 @@ public class MeetingManGUI implements ActionListener{
 			}
     	}
     }
+    
+    /**
+     * Show the diary frame for the chosen diary
+     * @param diary the diary to view
+     */
     public void viewDiary(Diary diary) {
+    	this.diaryBeingViewed = diary;
     	if (diary != null) {
     		createAndRunDiaryFrame(diary);
     	}
     }
     
+    /**
+     * Add a diary to the tree/list
+     * @param firstname	the firstname of the new diary
+     * @param lastname	the lastname of the new diary
+     * @return	true if added successfully
+     */
     public boolean addDiary(String firstname, String lastname) {
     	Diary toAdd = new Diary(firstname, lastname);
     	if (manager.addDiary(toAdd)) {
-			DefaultListModel<Diary> model = ((DefaultListModel<Diary>)this.diaryList.getModel());
-			model.addElement(toAdd);
+			//DefaultListModel<Diary> model = ((DefaultListModel<Diary>)this.diaryList.getModel());
+			//model.addElement(toAdd);
 			refreshDiaryList();
     		return true;
     	} else return false;
     }
     
-    
+    /**
+     * Edit a diary's name
+     * @param diary	The diary to edit
+     * @param firstname	the new firstname
+     * @param lastname	the new lastname
+     * @return	true if edited successfully
+     */
     public boolean editDiary(Diary diary, String firstname, String lastname) {
     	boolean toReturn = manager.editDiaryName(diary, firstname, lastname);
     	this.refreshDiaryList();
     	return toReturn;
     }
     
+    /**
+     * Add every diary in the tree to the listmodel of the diaryList
+     */
     public void refreshDiaryList() {
 
 		DefaultListModel<Diary> listmodel = new DefaultListModel<Diary>();
@@ -721,6 +774,9 @@ public class MeetingManGUI implements ActionListener{
 		diaryList.setModel(listmodel);
     }
     
+    /**
+     * add every event in the diary to the listmodel of the eventList
+     */
     public void refreshEventList() {
 
 		DefaultListModel<Event> listmodel = new DefaultListModel<Event>();
@@ -729,6 +785,11 @@ public class MeetingManGUI implements ActionListener{
 		}
 		eventList.setModel(listmodel);
     }
+    
+    /**
+     * Find meeting slots for the selected diaries and show them
+     * @param diaries the list of diaries for which to find the meeting slots
+     */
     public void findSlot(List<Diary> diaries) {
     	Date now1 = new Date();
     	this.diaryBeingViewed = manager.findMeetingSlot(diaries);
@@ -742,6 +803,10 @@ public class MeetingManGUI implements ActionListener{
     		    JOptionPane.PLAIN_MESSAGE);
     }
     
+    /**
+     * Edit an event or if a <code>editingEvent</code> doesn't exist, add it.
+     * If <code>addingToAll</code> is set to true, add this event to all selected diaries
+     */
     public void editEvent() {
     	if (addingToAll) {
         	if (manager.addEventToAll(diaryList.getSelectedValuesList(), readEventFromFrame())) {
@@ -768,6 +833,10 @@ public class MeetingManGUI implements ActionListener{
     	}
     }
 
+    /**
+     * Get an event from the data that is in the fields of the event frame
+     * @return the event with the data from the event frame fields
+     */
 	private Event readEventFromFrame() {
 		String name = this.eventNameField.getText();
 		Integer startYear = (Integer) this.startSpinners[0].getValue();

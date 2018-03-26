@@ -1,6 +1,11 @@
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * A class containing data about an event in a diary.
+ * @author AC12001 17/18 group 2
+ *
+ */
 public class Event implements Comparable<Event>, Serializable{
 
 	private static final long serialVersionUID = 2809278511859046638L; //compiler-generated, for object saving
@@ -71,7 +76,7 @@ public class Event implements Comparable<Event>, Serializable{
 	@Override
 	public String toString() {
 		//TODO maybe not like this
-		return name +", from " + startTime + " to " + endTime + "\t\t";
+		return name +", from " + startTime + " to " + endTime;
 	}
 
 	/**
